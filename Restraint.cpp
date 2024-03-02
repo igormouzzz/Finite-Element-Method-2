@@ -34,7 +34,7 @@ void Restraint::ApplyRestraints(Matrix& K, Restraint R)
 			{
 				if (2 * nodes[i] - 2 == j)
 				{
-					K.Set(2 * nodes[i] - 2, j, 1.0);
+					K.Set(2 * nodes[i] - 2, j, 1.0);	//out of range
 				}
 				else
 				{

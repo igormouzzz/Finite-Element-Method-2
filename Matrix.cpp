@@ -251,7 +251,15 @@ Matrix Matrix::Inversed()
 			Y.a[i][j] = Y.a[i][j] / temp;
 		}
 	}
-	return Y;
+	Matrix Inv(N, N);
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			Inv.a[i][j] = Y.a[i][N + j];
+		}
+	}
+	return Inv;
 }
 void Matrix::Symmetric()
 {

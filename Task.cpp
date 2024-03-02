@@ -22,9 +22,9 @@ int Task()
 
 	int element_count = int(list_elements_with_nodes.size());
 	int node_count = int(list_of_nodes_with_coords.size());
-	
-	vector<TriangularElement> elements(element_count);
-	//vector<QuadElement> elements(element_count);
+
+	//vector<TriangularElement> elements(element_count);
+	vector<QuadElement> elements(element_count);
 	vector<Matrix> matrices(element_count);
 	vector<int3> nums(element_count);
 	vector<Strains> Epsilon(element_count);
@@ -36,16 +36,17 @@ int Task()
 		elements[i].CreateElement(list_of_nodes_with_coords, list_elements_with_nodes, nums, i);
 		//cout << nums[i].n[0] << nums[i].n[1] << nums[i].n[2] << endl;
 		//cout << i << ":\t" << endl;
-		//cout << elements[i] << endl;
 	}
 
 	for (int i = 0; i < elements.size(); i++)
 	{
+		//elements[i].Print();
 		matrices[i] = elements[i].CreateMatrixK();
 		//cout << matrices[i] << endl;
 	}
 
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
+	cout << K.GetN() << endl;	//216
 
 	for (int k = 0; k < R.size(); k++)
 	{

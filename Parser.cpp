@@ -13,8 +13,8 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 
 int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem)
 {
-	//string filename = "C:/Users/Igor Volov/Documents/CAE-Fidesys-6.0/fidesys06.fc";
-	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys05.fc";
+	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys07.fc";
+	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga/FC files/fidesys07.fc";
 
 	std::ifstream fc_file(filename, std::ios::in);
 
@@ -37,8 +37,8 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	//const string num_of_nodes_of_elem = num_of_nodes_of_elem0;
 	const int num_of_nodes_of_elem = *reinterpret_cast<const int*>(num_of_nodes_of_elem0.c_str());
 	cout << "--" << num_of_nodes_of_elem << endl;	//triangles 168430090 //squares 12
-	int num_nodes = 3;
-
+	int num_nodes = 4;
+	/*
 	if (num_of_nodes_of_elem == 168430090)
 	{
 		cout << "tri" << endl;
@@ -49,7 +49,7 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 		cout << "quad" << endl;
 		num_nodes = 4;
 	}
-
+	*/
 	cout << "num_nodes = " << num_nodes << endl;
 	const string tmp = _root["mesh"]["nids"];
 	string mesh_nids;
@@ -78,7 +78,7 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	hex_list.resize(mesh_elems_count);
 
 	for (int element_ID = 0; element_ID < mesh_elems_count; element_ID++) {
-		for (int j = 0; j < num_nodes; j++) 
+		for (int j = 0; j < num_nodes; j++)
 		{
 			const int node_number = *reinterpret_cast<const int*>(mesh_elems.c_str() + (element_ID * 3 + j) * sizeof(int)); // [elem][j].asInt();
 			map<int, int>::iterator map_iterator;
@@ -153,7 +153,6 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	//cout << endl;
 
 	//cout << "----" << endl;
-
 	for (int k = 0; k < 2; k++)
 	{
 		const int apply_to_size_restraints = _root["restraints"][k]["apply_to_size"];

@@ -38,28 +38,6 @@ double* QuadElement::FF(double ksi, double eta)
 }
 Matrix QuadElement::DerFF(double ksi, double eta)
 {
-/*	Matrix W(2, 4);
-	
-	Matrix Y(4, 4);
-	for (int i = 0; i < 4; i++)
-	{
-		Y.a[i][0] = 1;
-		Y.a[i][1] = coord[i].x;
-		Y.a[i][2] = coord[i].y;
-		Y.a[i][3] = coord[i].x * coord[i].y;
-	}
-	Matrix M = Y.Inversed();
-
-	W.a[0][0] = M.a[1][0] + M.a[3][0] * y;
-	W.a[1][0] = M.a[2][0] + M.a[3][0] * x;
-	W.a[0][1] = M.a[1][1] + M.a[3][1] * y;
-	W.a[1][1] = M.a[2][1] + M.a[3][1] * x;
-	W.a[0][2] = M.a[1][2] + M.a[3][2] * y;
-	W.a[1][2] = M.a[2][2] + M.a[3][2] * x;
-	W.a[0][3] = M.a[1][3] + M.a[3][3] * y;
-	W.a[1][3] = M.a[2][3] + M.a[3][3] * x;
-
-	return W;*/
 	Matrix gradFF(2, 4);
 	gradFF.a[0][0] = 0.25 * (-1 + eta);	//N1 ksi
 	gradFF.a[1][0] = 0.25 * (-1 + ksi); //N1 eta
@@ -74,24 +52,30 @@ Matrix QuadElement::DerFF(double ksi, double eta)
 Matrix QuadElement::Jac(double ksi, double eta)
 {
 	Matrix M = DerFF(ksi, eta);
+	//cout << "M = " << endl << M << endl;
 	Matrix MatOfCoord(4, 2);
 	MatOfCoord.a[0][0] = coord[0].x; MatOfCoord.a[0][1] = coord[0].y;
-	MatOfCoord.a[1][0] = coord[1].x; MatOfCoord.a[1][1] = coord[0].y;
-	MatOfCoord.a[2][0] = coord[2].x; MatOfCoord.a[2][1] = coord[0].y;
-	MatOfCoord.a[3][0] = coord[3].x; MatOfCoord.a[3][1] = coord[0].y;
+	MatOfCoord.a[1][0] = coord[1].x; MatOfCoord.a[1][1] = coord[1].y;
+	MatOfCoord.a[2][0] = coord[2].x; MatOfCoord.a[2][1] = coord[2].y;
+	MatOfCoord.a[3][0] = coord[3].x; MatOfCoord.a[3][1] = coord[3].y;
+	//cout << "MatOfCoord = " << endl << MatOfCoord << endl;
 	return M * MatOfCoord;
 }
 Matrix QuadElement::DerFFGlob(double ksi, double eta)
 {
 	Matrix derFF = DerFF(ksi, eta);
-	Matrix J_inv = Jac(ksi, eta).Inversed();
+	Matrix J = Jac(ksi, eta);
+	//cout << "J = " << endl << J_inv << endl;
+	Matrix J_inv = J.Inversed();
+	//cout << "J_inv = " << endl << J_inv << endl;
 	return J_inv * derFF;
 }
 Matrix QuadElement::CreateMatrixB(double ksi, double eta)
 {
 	Matrix B(3, 8);
-	Matrix W = DerFFGlob(ksi,eta);
-	
+	Matrix W = DerFFGlob(ksi, eta);
+	//cout << "W = " << endl << W << endl;
+	//cout << "---" << endl;
 	B.a[0][0] = B.a[2][1] = W.a[0][0];	//Ô1 x
 	B.a[1][1] = B.a[2][0] = W.a[1][0];	//Ô1 y
 	B.a[0][2] = B.a[2][3] = W.a[0][1];	//Ô2 x
@@ -141,7 +125,7 @@ void QuadElement::CreateElement(vector<double3>& pt_list, vector<int3>& hex_list
 
 void QuadElement::Print()
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		cout << coord[i].x << " " << coord[i].y << endl;
 	}
