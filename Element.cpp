@@ -1,11 +1,11 @@
 #include "Element.h"
 
-Strains Element::FindStrains(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<int3>& list_elements_with_nodes, Element& elem, int index)
+Strains Element::FindStrains(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index)
 {
 	Matrix B = elem.CreateMatrixB();
-	vector<double> u(6);
+	vector<double> u(2 * COUNT_OF_NODES);
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < COUNT_OF_NODES; i++)
 	{
 		u[2 * i] = X[2 * list_elements_with_nodes[index].n[i]];
 		u[2 * i + 1] = X[2 * list_elements_with_nodes[index].n[i] + 1];
@@ -13,7 +13,7 @@ Strains Element::FindStrains(const vector<double>& X, const vector<double3> list
 
 	return Strains(B * u);
 }
-Stresses Element::FindStresses(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<int3>& list_elements_with_nodes, Element& elem, int index)
+Stresses Element::FindStresses(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index)
 {
 	Matrix A = elem.mat.GetA();
 

@@ -12,9 +12,9 @@ protected:
 public:
 	virtual void SetMaterial(Material m) = 0;
 	virtual Matrix CreateMatrixK() = 0;
-	virtual void CreateElement(vector<double3>& pt_list, vector<int3>& hex_list, vector<int3>& nums, int i) = 0;
-	static Strains FindStrains(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<int3>& list_elements_with_nodes, Element& elem, int index);
-	static Stresses FindStresses(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<int3>& list_elements_with_nodes, Element& elem, int index);
+	virtual void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i) = 0;
+	static Strains FindStrains(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index);
+	static Stresses FindStresses(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index);
 	virtual void Print() = 0;
 	friend ostream& operator<<(ostream& cout, const Element& b);
 };
@@ -32,7 +32,7 @@ public:
 	TriangularElement operator=(TriangularElement b);
 	void SetMaterial(Material m) { mat = m; }
 	Matrix CreateMatrixK();
-	void CreateElement(vector<double3>& pt_list, vector<int3>& hex_list, vector<int3>& nums, int i);
+	void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i);
 	void Print();
 };
 
@@ -56,6 +56,6 @@ public:
 	QuadElement operator=(QuadElement b);
 	void SetMaterial(Material m) { mat = m; }
 	Matrix CreateMatrixK();
-	void CreateElement(vector<double3>& pt_list, vector<int3>& hex_list, vector<int3>& nums, int i);
+	void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i);
 	void Print();
 };

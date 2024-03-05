@@ -52,30 +52,29 @@ Matrix QuadElement::DerFF(double ksi, double eta)
 Matrix QuadElement::Jac(double ksi, double eta)
 {
 	Matrix M = DerFF(ksi, eta);
-	//cout << "M = " << endl << M << endl;
 	Matrix MatOfCoord(4, 2);
 	MatOfCoord.a[0][0] = coord[0].x; MatOfCoord.a[0][1] = coord[0].y;
 	MatOfCoord.a[1][0] = coord[1].x; MatOfCoord.a[1][1] = coord[1].y;
 	MatOfCoord.a[2][0] = coord[2].x; MatOfCoord.a[2][1] = coord[2].y;
 	MatOfCoord.a[3][0] = coord[3].x; MatOfCoord.a[3][1] = coord[3].y;
-	//cout << "MatOfCoord = " << endl << MatOfCoord << endl;
 	return M * MatOfCoord;
 }
 Matrix QuadElement::DerFFGlob(double ksi, double eta)
 {
 	Matrix derFF = DerFF(ksi, eta);
 	Matrix J = Jac(ksi, eta);
-	//cout << "J = " << endl << J_inv << endl;
-	Matrix J_inv = J.Inversed();
-	//cout << "J_inv = " << endl << J_inv << endl;
+	double det = det2(J.a[0][0], J.a[1][0], J.a[0][1], J.a[1][1]);
+	if (abs(det) < 1e-10)
+	{
+		cout << "J = " << endl << J << endl;
+	}
+	Matrix J_inv = J.Inv2();
 	return J_inv * derFF;
 }
 Matrix QuadElement::CreateMatrixB(double ksi, double eta)
 {
 	Matrix B(3, 8);
 	Matrix W = DerFFGlob(ksi, eta);
-	//cout << "W = " << endl << W << endl;
-	//cout << "---" << endl;
 	B.a[0][0] = B.a[2][1] = W.a[0][0];	//Ô1 x
 	B.a[1][1] = B.a[2][0] = W.a[1][0];	//Ô1 y
 	B.a[0][2] = B.a[2][3] = W.a[0][1];	//Ô2 x
@@ -111,7 +110,7 @@ Matrix QuadElement::CreateMatrixK()
 	}
 	return K;
 }
-void QuadElement::CreateElement(vector<double3>& pt_list, vector<int3>& hex_list, vector<int3>& nums, int i)
+void QuadElement::CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
 {
 	vector<QuadElement> elems2(pt_list.size());
 	vector<double3> coord_of_element_nodes(4);

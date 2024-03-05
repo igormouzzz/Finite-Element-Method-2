@@ -62,7 +62,7 @@ Matrix TriangularElement::CreateMatrixK()
 	Matrix B = CreateMatrixB();
 	return B.T() * A * B * Delta;
 }
-void TriangularElement::CreateElement(vector<double3>& pt_list, vector<int3>& hex_list, vector<int3>& nums, int i)
+void TriangularElement::CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
 {
 	vector<TriangularElement> elems2(pt_list.size());
 	vector<double3> coord_of_element_nodes(3);

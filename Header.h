@@ -17,6 +17,9 @@ void base64_decode(const std::string& encoded_string, std::string& decoded_strin
 #include <omp.h>
 #include <typeinfo>
 
+#define COUNT_OF_NODES 4
+
+
 struct float6
 {
 	float x, y, z, w, u, v;
@@ -55,6 +58,17 @@ struct int3
 	int n[3];
 };
 typedef struct int3 int3;
+struct int4
+{
+	int n[4];
+};
+typedef struct int4 int4;
+
+#if COUNT_OF_NODES == 3
+using vc = int3;
+#else
+using vc = int4;
+#endif
 
 double det2(double a11, double a12, double a21, double a22);
 double det3(double a11, double a12, double a13, double a21, double a22, double a23, double a31, double a32, double a33);
@@ -64,8 +78,8 @@ class Force;
 class Restraint;
 class Element;
 class Material;
-int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem);
-Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<int3> nums);
+int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem);
+Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 int Task();
 //#define FLOAT_TYPE
 

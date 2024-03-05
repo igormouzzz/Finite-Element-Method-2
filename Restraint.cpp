@@ -5,7 +5,7 @@ Restraint::Restraint(double3 f, vector<int> nums, vector<int> flags)
 {
 	F = f; nodes = nums; flag = flags;
 }
-Restraint::Restraint(double3 f, int3 nums, vector<int> flags)
+Restraint::Restraint(double3 f, vc nums, vector<int> flags)
 {
 	F = f;
 	nodes.resize(3);
@@ -39,7 +39,8 @@ void Restraint::ApplyRestraints(Matrix& K, Restraint R)
 				else
 				{
 
-					K.Set(2 * nodes[i] - 2, j, 0.0); K.Set(j, 2 * nodes[i] - 2, 0.0);
+					K.Set(2 * nodes[i] - 2, j, 0.0);	//out of range
+					K.Set(j, 2 * nodes[i] - 2, 0.0);	//out of range
 				}
 			}
 			if (R.GetFlag()[1])
@@ -50,7 +51,8 @@ void Restraint::ApplyRestraints(Matrix& K, Restraint R)
 				}
 				else
 				{
-					K.Set(2 * nodes[i] - 1, j, 0.0); K.Set(j, 2 * nodes[i] - 1, 0.0);
+					K.Set(2 * nodes[i] - 1, j, 0.0);
+					K.Set(j, 2 * nodes[i] - 1, 0.0);
 				}
 			}
 		}

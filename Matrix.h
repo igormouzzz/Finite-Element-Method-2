@@ -41,13 +41,14 @@ public:
 	void SumOfRows();
 	double Det();
 	Matrix Inversed();
+	Matrix Inv2();
 	void Clean();
 	~Matrix() { Clean(); }
 	friend class Element;
 	friend class TriangularElement;
 	friend class QuadElement;
 	friend class Material;
-	friend Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<int3> nums);
+	friend Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 	friend ostream& operator<<(ostream& cout, const Matrix& b);
 
 	vector<double> Gauss(vector<double>& b);

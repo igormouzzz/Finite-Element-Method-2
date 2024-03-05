@@ -11,10 +11,10 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 	return a11 * det2(a22, a23, a32, a33) - a12 * det2(a21, a23, a31, a33) + a13 * det2(a21, a22, a31, a32);
 }
 
-int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem)
+int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem)
 {
-	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys07.fc";
-	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga/FC files/fidesys07.fc";
+	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys08.fc";
+	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga Igor/FC files/fidesys11.fc";
 
 	std::ifstream fc_file(filename, std::ios::in);
 
@@ -37,19 +37,7 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	//const string num_of_nodes_of_elem = num_of_nodes_of_elem0;
 	const int num_of_nodes_of_elem = *reinterpret_cast<const int*>(num_of_nodes_of_elem0.c_str());
 	cout << "--" << num_of_nodes_of_elem << endl;	//triangles 168430090 //squares 12
-	int num_nodes = 4;
-	/*
-	if (num_of_nodes_of_elem == 168430090)
-	{
-		cout << "tri" << endl;
-		num_nodes = 3;
-	}
-	else
-	{
-		cout << "quad" << endl;
-		num_nodes = 4;
-	}
-	*/
+	int num_nodes = COUNT_OF_NODES;
 	cout << "num_nodes = " << num_nodes << endl;
 	const string tmp = _root["mesh"]["nids"];
 	string mesh_nids;
@@ -80,39 +68,13 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	for (int element_ID = 0; element_ID < mesh_elems_count; element_ID++) {
 		for (int j = 0; j < num_nodes; j++)
 		{
-			const int node_number = *reinterpret_cast<const int*>(mesh_elems.c_str() + (element_ID * 3 + j) * sizeof(int)); // [elem][j].asInt();
+			const int node_number = *reinterpret_cast<const int*>(mesh_elems.c_str() + (element_ID * COUNT_OF_NODES + j) * sizeof(int)); // [elem][j].asInt();
 			map<int, int>::iterator map_iterator;
 			map_iterator = _map_node_numeration.find(node_number);
 			//const int glob_node = FCFindInMap(_map_node_numeration, node_number, "mesh.elems");
 			hex_list[element_ID].n[j] = map_iterator->second;
 		}
 	}
-	//cout << mesh_elems_count << endl;
-	/*
-	for (int node_ID = 0; node_ID < mesh_node_count; node_ID++) {
-		cout << node_ID << ": ";
-		cout << pt_list[node_ID].x << " " << pt_list[node_ID].y << " " << pt_list[node_ID].z << endl;
-	}
-	cout << endl << endl;
-	for (int element_ID = 0; element_ID < mesh_elems_count; element_ID++) {
-		for (int j = 0; j < 3; j++) {
-			cout << hex_list[element_ID].n[j] << " ";
-		}
-		cout << endl;
-	}
-
-	for (int element_ID = 0; element_ID < mesh_elems_count; element_ID++) {
-		for (int j = 0; j < 3; j++)
-		{
-			cout << hex_list[element_ID].n[j] << ":\t";
-			cout << pt_list[hex_list[element_ID].n[j]].x << " " << pt_list[hex_list[element_ID].n[j]].y;
-			cout << endl;
-		}
-		cout << endl << endl;
-	}
-	*/
-
-
 	const string Jung0 = _root["materials"][0]["elasticity"][0]["constants"][0];
 	string Jung1;
 	base64_decode(Jung0, Jung1);
@@ -123,6 +85,8 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	double Poison = *reinterpret_cast<const double*>(Poison1.c_str());
 	E = Jung; Nu = Poison;
 
+	int len = 6;
+	
 	const int apply_to_size = _root["loads"][0]["apply_to_size"];
 
 	vector<int> v(apply_to_size);
@@ -135,7 +99,7 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	}
 	//pt_list[node_ID].x = *reinterpret_cast<const double*>(mesh_nodes.c_str() + (node_ID * 3 + 0) * sizeof(double));
 
-	int len = 6;
+
 	vector<string> data0(len), data1(len);
 	vector<double> data(len);
 	for (int i = 0; i < data0.size(); i++)
@@ -148,12 +112,10 @@ int Read(vector<double3>& pt_list, vector<int3>& hex_list, Force& F, vector<Rest
 	double3 f; f.x = data[0]; f.y = data[1]; f.z = data[2];
 
 	F = Force(f, v);
-	//cout << F.GetF().x << " " << F.GetF().y << endl;
-	//for (int i = 0; i < F.GetNumbersOfNodes().size(); i++) cout << F.GetNumbersOfNodes()[i] << " ";
-	//cout << endl;
-
-	//cout << "----" << endl;
-	for (int k = 0; k < 2; k++)
+	
+	//vector<string> data0(len), data1(len);
+	//vector<double> data(len);
+	for (int k = 0; k < 1; k++)
 	{
 		const int apply_to_size_restraints = _root["restraints"][k]["apply_to_size"];
 		vector<int> flag;

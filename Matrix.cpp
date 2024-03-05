@@ -38,7 +38,7 @@ Matrix::Matrix(int N, int M)
 	{
 		this->a[i].resize(M);
 	}
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -58,7 +58,7 @@ Matrix::Matrix(const Matrix& b)
 	{
 		this->a[i].resize(M);
 	}
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -102,7 +102,7 @@ Matrix Matrix::operator+(const Matrix& b)
 	else
 	{
 		Matrix S(N, M);
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -124,7 +124,7 @@ Matrix Matrix::operator-(const Matrix& b)
 	else
 	{
 		Matrix S(N, M);
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -139,7 +139,7 @@ Matrix Matrix::operator-(const Matrix& b)
 Matrix Matrix::operator*(double k)
 {
 	Matrix S(N, M);
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -159,7 +159,7 @@ Matrix Matrix::operator*(const Matrix& b)
 	else
 	{
 		Matrix S(N, b.M);
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < b.M; j++)
@@ -184,7 +184,7 @@ vector<double> Matrix::operator*(vector<double>& b)
 	else
 	{
 		vector<double> s(N);
-		#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -198,7 +198,7 @@ vector<double> Matrix::operator*(vector<double>& b)
 Matrix Matrix::T()
 {
 	Matrix S(M, N);
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < M; i++)
 	{
 		for (int j = 0; j < N; j++)
@@ -207,6 +207,16 @@ Matrix Matrix::T()
 		}
 	}
 	return S;
+}
+Matrix Matrix::Inv2()
+{
+	Matrix Y(2, 2);
+	double detinv = 1 / det2(a[0][0], a[1][0], a[0][1], a[1][1]);
+	Y.a[0][0] = a[1][1];
+	Y.a[1][1] = a[0][0];
+	Y.a[1][0] = -a[1][0];
+	Y.a[0][1] = -a[0][1];
+	return Y * detinv;
 }
 Matrix Matrix::Inversed()
 {

@@ -11,9 +11,10 @@ int Task()
 	double sec = 0;
 	timespec_get(&ts1, TIME_UTC);
 	vector<double3> list_of_nodes_with_coords;
-	vector<int3> list_elements_with_nodes;
+	vector<vc> list_elements_with_nodes;
 	double E, Nu;
-	Force F; vector<Restraint> R;
+	Force F;
+	vector<Restraint> R;
 	int number_of_nodes_of_elem = 0;
 	Read(list_of_nodes_with_coords, list_elements_with_nodes, F, R, E, Nu, number_of_nodes_of_elem);
 	cout << endl << endl;
@@ -23,10 +24,13 @@ int Task()
 	int element_count = int(list_elements_with_nodes.size());
 	int node_count = int(list_of_nodes_with_coords.size());
 
-	//vector<TriangularElement> elements(element_count);
+#if COUNT_OF_NODES == 3
+	vector<TriangularElement> elements(element_count);
+#else
 	vector<QuadElement> elements(element_count);
+#endif
 	vector<Matrix> matrices(element_count);
-	vector<int3> nums(element_count);
+	vector<vc> nums(element_count);
 	vector<Strains> Epsilon(element_count);
 	vector<Stresses> Sigma(element_count);
 
@@ -34,19 +38,16 @@ int Task()
 	{
 		elements[i].SetMaterial(mat);
 		elements[i].CreateElement(list_of_nodes_with_coords, list_elements_with_nodes, nums, i);
-		//cout << nums[i].n[0] << nums[i].n[1] << nums[i].n[2] << endl;
-		//cout << i << ":\t" << endl;
 	}
 
 	for (int i = 0; i < elements.size(); i++)
 	{
-		//elements[i].Print();
 		matrices[i] = elements[i].CreateMatrixK();
-		//cout << matrices[i] << endl;
 	}
 
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
-	cout << K.GetN() << endl;	//216
+	cout << K.GetN() << endl;
+	//cout << K << endl;
 
 	for (int k = 0; k < R.size(); k++)
 	{
@@ -64,6 +65,11 @@ int Task()
 	}
 	cout << K.GetN() << endl;
 	vector<double> X = K.Gauss(b);
+	for (int i = 0; i < X.size(); i++)
+	{
+		cout << X[i] << " ";
+	}
+	cout << endl;
 	//vector<double> X = K.Iter(b);
 
 	for (int i = 0; i < elements.size(); i++)
@@ -73,7 +79,7 @@ int Task()
 	}
 	ofstream f3("strains.txt");
 	ofstream f4("stresses.txt");
-	cout << Epsilon.size() << endl;
+	//cout << Epsilon.size() << endl;
 	for (int i = 0; i < Epsilon.size(); i++)
 	{
 		f3 << Epsilon[i];

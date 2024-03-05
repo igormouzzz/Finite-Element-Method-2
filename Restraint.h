@@ -10,7 +10,7 @@ private:
 public:
 	Restraint();
 	Restraint(double3 f, vector<int> nums, vector<int> flags);
-	Restraint(double3 f, int3 nums, vector<int> flags);
+	Restraint(double3 f, vc nums, vector<int> flags);
 	Restraint& operator=(Restraint b);
 	double3 GetF();
 	vector<int> GetNumbersOfNodes();
