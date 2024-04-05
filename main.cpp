@@ -2,7 +2,9 @@
 
 int main()
 {
-	Task();
+	//Example();
+	//Task();
+	Task2();
 
 	return 0;
 }

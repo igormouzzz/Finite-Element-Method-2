@@ -49,6 +49,25 @@ Matrix::Matrix(int N, int M)
 	}
 }
 
+Matrix::Matrix(vector<row> rows)
+{
+	this->N = rows.size();
+	this->M = rows[0].size();
+	this->a.resize(N);
+	for (int i = 0; i < N; i++)
+	{
+		this->a[i].resize(M);
+	}
+#pragma omp parallel for
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			this->a[i][j] = rows[i][j];
+		}
+	}
+}
+
 Matrix::Matrix(const Matrix& b)
 {
 	this->N = b.N;
@@ -363,8 +382,76 @@ double Matrix::Det()
 	return Det0(a, N);
 }
 
+double Matrix::SumOfComponentsForProduct(vector<double>& b)
+{
+	vector<double> x = (*this) * b;
+	double sum = 0;
+	for (int i = 0; i < x.size(); i++) sum += x[i];
+	return sum;
+}
+
+void Matrix::ToCSR(ofstream& f)
+{
+	unsigned int non_zero = 0;
+	unsigned int non_zero_in_rows = 0;
+	unsigned int non_zero_in_columns = 0;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			if (abs(a[i][j]) > 1e-5)
+			{
+				non_zero++;
+			}
+		}
+	}
+	f << N << " " << non_zero << endl;
+	
+	f << 0;
+	for (int i = 0; i < N; i++)
+	{
+		//non_zero_in_rows = 0;
+		for (int j = 0; j < M; j++)
+		{
+			if (abs(a[i][j]) > 1e-5)
+			{
+				non_zero_in_rows++;
+			}
+		}
+		f << " " << non_zero_in_rows;
+	}
+	f << endl;
+
+	f << 0;
+	for (int j = 0; j < M; j++)
+	{
+		for (int i = 0; i < N; i++)
+		{
+			if (abs(a[i][j]) > 1e-5)
+			{
+				f << " " << j;
+			}
+		}
+	}
+	f << endl;
+	
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < M; j++)
+		{
+			if (abs(a[i][j]) > 1e-5)
+			{
+				f << a[i][j] << " ";
+			}
+		}
+	}
+	//f << endl;
+}
+
 vector<double> Matrix::Gauss(vector<double>& b)
 {
+	if (norm_square(b) < 1e-30) return vector<double>(b.size());
+
 	for (int i = 0; i < N - 1; i++) {
 		// Поиск максимального элемента в столбце
 		int maxi = i;
@@ -401,6 +488,207 @@ vector<double> Matrix::Gauss(vector<double>& b)
 		}
 		x[i] = (b[i] - sum) / a[i][i];
 	}
+
+	return x;
+}
+
+vector<double> Matrix::CG(vector<double>& b)
+{
+	vector<double> Xk(M), Zk(M), Rk(M), Sz(M);
+	double alpha, beta, mf;
+	double Spr, Spr1, Spz;
+
+	int kl = 0;
+	int i, j;
+	double max_iter = 1000;
+	/* Вычисляем сумму квадратов элементов вектора b*/
+	for (mf = 0, i = 0; i < M; i++) 
+	{
+		mf += b[i] * b[i];
+	}
+
+
+	/* Задаем начальное приближение корней. В Хk хранятся значения корней
+	 * к-й итерации. */
+	for (i = 0; i < M; i++) 
+	{
+		Xk[i] = 0;
+	}
+
+	/* Задаем начальное значение r0 и z0. */
+	for (i = 0; i < M; i++) {
+		for (Sz[i] = 0, j = 0; j < M; j++)
+		{
+			Sz[i] += a[i][j] * Xk[j];
+		}
+		Rk[i] = b[i] - Sz[i];
+		Zk[i] = Rk[i];
+	}
+	int Iteration = 0;
+	do {
+		Iteration++;
+		/* Вычисляем числитель и знаменатель для коэффициента
+		 * alpha = (rk-1,rk-1)/(Azk-1,zk-1) */
+		Spz = 0;
+		Spr = 0;
+		for (i = 0; i < M; i++) {
+			for (Sz[i] = 0, j = 0; j < M; j++) 
+			{
+				Sz[i] += a[i][j] * Zk[j];
+			}
+			Spz += Sz[i] * Zk[i];
+			Spr += Rk[i] * Rk[i];
+		}
+		alpha = Spr / Spz;             /*  alpha    */
+
+
+		/* Вычисляем вектор решения: xk = xk-1+ alpha * zk-1,
+			вектор невязки: rk = rk-1 - alpha * A * zk-1 и числитель для betaa равный (rk,rk) */
+		Spr1 = 0;
+		for (i = 0; i < M; i++) 
+		{
+			Xk[i] += alpha * Zk[i];
+			Rk[i] -= alpha * Sz[i];
+			Spr1 += Rk[i] * Rk[i];
+			//cout << "Iter #" << kl;
+			//cout << " " << "X[" << i << "] = " << Xk[i] << endl;
+		}
+		//cout << endl;
+		kl++;
+
+		/* Вычисляем  beta  */
+		beta = Spr1 / Spr;
+
+		/* Вычисляем вектор спуска: zk = rk+ beta * zk-1 */
+		for (i = 0; i < M; i++)
+			Zk[i] = Rk[i] + beta * Zk[i];
+	}
+	/* Проверяем условие выхода из итерационного цикла  */
+	while (Spr1 / mf > epsilon * epsilon && Iteration < max_iter);
+
+	cout << "kol-vo iter: " << kl << endl;
+
+	return Xk;
+}
+
+double norm_square(vector<double>& b)
+{
+	double norm = 0;
+	#pragma omp parallel for reduction(+:norm)
+	for (int i = 0; i < b.size(); i++) norm += b[i] * b[i];
+	return norm;
+}
+
+double norm_l1(vector<double>& b)
+{
+	double norm = 0;
+	#pragma omp parallel for reduction(+:norm)
+	for (int i = 0; i < b.size(); i++) norm += abs(b[i]);
+	return norm;
+}
+
+double scalar_product(vector<double>& a, vector<double>& b)
+{
+	double sp = 0;
+	#pragma omp parallel for reduction(+:sp)
+	for (int i = 0; i < a.size(); i++) sp += a[i] * b[i];
+	return sp;
+}
+
+vector<double> Matrix::CG2(vector<double>& b, double tolerance)
+{
+	double alpha, beta;
+	vector<double> Xk(N), Xk_1(N), Rk(N), Rk_1(N), Zk(N), Zk_1(N), AXk_1(N);
+	
+	unsigned int iteration = 0;
+	unsigned int max_iter = 1000;
+
+	vector<double> tmp(N);
+
+	for (int i = 0; i < N; i++)
+	{
+		Xk_1[i] = 0;
+	}
+
+	AXk_1 = (*this) * Xk_1;
+	for (int i = 0; i < N; i++)
+	{
+		Rk_1[i] = b[i] - AXk_1[i];
+	}
+	Zk_1 = Rk_1;
+
+	do
+	{
+		tmp = (*this) * Zk_1;
+		alpha = norm_square(Rk_1) / scalar_product(tmp, Zk_1);
+
+		for (int i = 0; i < N; i++)
+		{
+			Xk[i] = Xk_1[i] + alpha * Zk_1[i];
+			Rk[i] = Rk_1[i] - alpha * tmp[i];
+		}
+
+		beta = norm_square(Rk) / norm_square(Rk_1);
+
+		for (int i = 0; i < N; i++)
+		{
+			Zk[i] = Rk[i] + beta * Zk_1[i];
+		}
+		iteration++;
+
+		cout << norm_square(Rk) / norm_square(b) << endl;
+
+		Xk_1 = Xk; Rk_1 = Rk; Zk_1 = Zk; AXk_1 = (*this) * Xk;
+
+	} while (norm_square(Rk_1)/ norm_square(b) >= tolerance * tolerance && iteration < max_iter);
+
+	cout << "iterations: " << iteration << endl;
+	cout << "tolerance: " << tolerance << endl;
+
+	return Xk;
+}
+
+vector<double> Matrix::CG3(vector<double>& b, double tolerance)
+{
+	double b_norm = norm_square(b);
+	//double b_norm = norm_l1(b);
+
+	if (b_norm == 0) return vector<double>(b.size());
+
+	size_t n = N;
+
+	std::vector<double> x(n, 0.0);  // Initial guess for the solution
+	std::vector<double> r = b;      // Residual vector
+	std::vector<double> p = r;      // Search direction vector
+
+	unsigned int iteration = 0;
+	unsigned int max_iter = 1000;
+
+	//for (size_t k = 0; k < n; ++k) 
+
+	do
+	{
+		vector<double> Ap = (*this)*p;
+		double alpha = scalar_product(r, r) / scalar_product(p, Ap);
+
+		for (size_t i = 0; i < n; ++i) 
+		{
+			x[i] += alpha * p[i];
+			r[i] -= alpha * Ap[i];
+		}
+
+		double beta = scalar_product(r, r) / scalar_product(p, p);
+
+		for (size_t i = 0; i < n; ++i) 
+		{
+			p[i] = r[i] + beta * p[i];
+		}
+
+		iteration++;
+	} while (norm_square(r) / b_norm > tolerance * tolerance && iteration < max_iter);
+
+	cout << "iterations: " << iteration << endl;
+	cout << "tolerance: " << tolerance << endl;
 
 	return x;
 }

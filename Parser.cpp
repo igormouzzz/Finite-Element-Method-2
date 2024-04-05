@@ -13,7 +13,7 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 
 int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem)
 {
-	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys08.fc";
+	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys03.fc";
 	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga Igor/FC files/fidesys11.fc";
 
 	std::ifstream fc_file(filename, std::ios::in);
@@ -115,7 +115,7 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 	
 	//vector<string> data0(len), data1(len);
 	//vector<double> data(len);
-	for (int k = 0; k < 1; k++)
+	for (int k = 0; k < 2; k++)
 	{
 		const int apply_to_size_restraints = _root["restraints"][k]["apply_to_size"];
 		vector<int> flag;

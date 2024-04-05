@@ -82,3 +82,12 @@ void TriangularElement::Print()
 	}
 	cout << endl;
 }
+
+void TriangularElement::PrintToFile(ofstream& f)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		f << coord[i].x << " " << coord[i].y << endl;
+	}
+	//f << endl;
+}

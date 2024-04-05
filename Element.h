@@ -16,6 +16,7 @@ public:
 	static Strains FindStrains(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index);
 	static Stresses FindStresses(const vector<double>& X, const vector<double3> list_of_nodes_with_coords, const vector<vc>& list_elements_with_nodes, Element& elem, int index);
 	virtual void Print() = 0;
+	virtual void PrintToFile(ofstream& f) = 0;
 	friend ostream& operator<<(ostream& cout, const Element& b);
 };
 
@@ -34,6 +35,7 @@ public:
 	Matrix CreateMatrixK();
 	void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i);
 	void Print();
+	void PrintToFile(ofstream& f);
 };
 
 
@@ -58,4 +60,5 @@ public:
 	Matrix CreateMatrixK();
 	void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i);
 	void Print();
+	void PrintToFile(ofstream& f);
 };

@@ -16,9 +16,9 @@ void base64_decode(const std::string& encoded_string, std::string& decoded_strin
 #include <thread>
 #include <omp.h>
 #include <typeinfo>
+#define epsilon 0.01
 
-#define COUNT_OF_NODES 4
-
+#define COUNT_OF_NODES 3
 
 struct float6
 {
@@ -28,7 +28,11 @@ typedef struct float6 float6;
 
 struct double6
 {
-	double x, y, z, w, u, v;
+	double n[6];
+	void operator=(double6& b)
+	{
+		for (int i = 0; i < 6; i++) n[i] = b.n[i];
+	}
 };
 typedef struct double6 double6;
 struct double3
@@ -81,6 +85,12 @@ class Material;
 int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem);
 Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 int Task();
+int Task2();
+int Example();
+
+double norm_square(vector<double>& b);
+double norm_l1(vector<double>& b);
+double scalar_product(vector<double>& a, vector<double>& b);
 //#define FLOAT_TYPE
 
 #ifdef FLOAT_TYPE

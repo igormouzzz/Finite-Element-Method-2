@@ -130,3 +130,12 @@ void QuadElement::Print()
 	}
 	cout << endl;
 }
+
+void QuadElement::PrintToFile(ofstream& f)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		f << coord[i].x << " " << coord[i].y << endl;
+	}
+	//f << endl;
+}

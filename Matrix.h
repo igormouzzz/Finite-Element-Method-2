@@ -11,8 +11,6 @@ using namespace std;
 #include <omp.h>
 #include <vector>
 
-#define eps 0.0001
-
 using row = vector<double>;
 
 class Matrix
@@ -26,7 +24,9 @@ protected:
 public:
 	Matrix();
 	Matrix(int N, int M);
+	Matrix(vector<row> rows);
 	Matrix(const Matrix& b);
+	double GetForIndicies(int i, int j) { return a[i][j]; }
 	size_t GetN();
 	void Set(int i, int j, double value);
 	Matrix& operator=(const Matrix& b);
@@ -52,4 +52,11 @@ public:
 	friend ostream& operator<<(ostream& cout, const Matrix& b);
 
 	vector<double> Gauss(vector<double>& b);
+	vector<double> CG(vector<double>& b);
+	vector<double> CG2(vector<double>& b, double tolerance);
+	vector<double> CG3(vector<double>& b, double tolerance);
+
+	void ToCSR(ofstream& f);
+
+	double SumOfComponentsForProduct(vector<double>& b);
 };
