@@ -11,7 +11,7 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 	return a11 * det2(a22, a23, a32, a33) - a12 * det2(a21, a23, a31, a33) + a13 * det2(a21, a22, a31, a32);
 }
 
-int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem)
+int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem, vector<vector<int>>& list_nodes_with_elem_nums)
 {
 	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys03.fc";
 	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga Igor/FC files/fidesys11.fc";
@@ -36,9 +36,9 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 	base64_decode(tmp1, num_of_nodes_of_elem0);
 	//const string num_of_nodes_of_elem = num_of_nodes_of_elem0;
 	const int num_of_nodes_of_elem = *reinterpret_cast<const int*>(num_of_nodes_of_elem0.c_str());
-	cout << "--" << num_of_nodes_of_elem << endl;	//triangles 168430090 //squares 12
+	//cout << "--" << num_of_nodes_of_elem << endl;	//triangles 168430090 //squares 12
 	int num_nodes = COUNT_OF_NODES;
-	cout << "num_nodes = " << num_nodes << endl;
+	//cout << "num_nodes = " << num_nodes << endl;
 	const string tmp = _root["mesh"]["nids"];
 	string mesh_nids;
 	base64_decode(tmp, mesh_nids);
@@ -49,6 +49,7 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 	const string mesh_nodes = mesh_nodes_tmp;
 
 	pt_list.resize(mesh_node_count);
+	list_nodes_with_elem_nums.resize(mesh_node_count);
 
 	//! Read Cubit numeration
 	std::map<int, int> _map_node_numeration;
@@ -75,6 +76,15 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 			hex_list[element_ID].n[j] = map_iterator->second;
 		}
 	}
+
+	for (int j = 0; j < mesh_elems_count; j++)
+	{
+		for (int k = 0; k < num_nodes; k++)
+		{
+			list_nodes_with_elem_nums[hex_list[j].n[k]].push_back(j);
+		}
+	}
+
 	const string Jung0 = _root["materials"][0]["elasticity"][0]["constants"][0];
 	string Jung1;
 	base64_decode(Jung0, Jung1);
@@ -115,7 +125,7 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 	
 	//vector<string> data0(len), data1(len);
 	//vector<double> data(len);
-	for (int k = 0; k < 2; k++)
+	for (int k = 0; k < _root["restraints"].size(); k++)
 	{
 		const int apply_to_size_restraints = _root["restraints"][k]["apply_to_size"];
 		vector<int> flag;

@@ -227,6 +227,58 @@ Matrix Matrix::T()
 	}
 	return S;
 }
+void Matrix::UnitRowAndColumn(int k, int l, int n)
+{
+	for (int i = 0; i < N; i++)
+	{
+		if (i == k)
+		{
+			a[i][l] = 1.0/double(n);
+		}
+		else
+		{
+			a[i][l] = 0;
+		}
+	}
+	for (int j = 0; j < M; j++)
+	{
+		if (j == l)
+		{
+			a[k][j] = 1.0/double(n);
+		}
+		else
+		{
+			a[k][j] = 0;
+		}
+	}
+}
+
+void Matrix::ZeroRowAndColumn(int k, int l)
+{
+	for (int i = 0; i < N; i++)
+	{
+		if (i == k)
+		{
+			a[i][l] = 0;
+		}
+		else
+		{
+			a[i][l] = 0;
+		}
+	}
+	for (int j = 0; j < M; j++)
+	{
+		if (j == l)
+		{
+			a[k][j] = 0;
+		}
+		else
+		{
+			a[k][j] = 0;
+		}
+	}
+}
+
 Matrix Matrix::Inv2()
 {
 	Matrix Y(2, 2);
@@ -648,7 +700,7 @@ vector<double> Matrix::CG2(vector<double>& b, double tolerance)
 	return Xk;
 }
 
-vector<double> Matrix::CG3(vector<double>& b, double tolerance)
+vector<double> Matrix::CG3(vector<double>& b)
 {
 	double b_norm = norm_square(b);
 	//double b_norm = norm_l1(b);
@@ -664,11 +716,14 @@ vector<double> Matrix::CG3(vector<double>& b, double tolerance)
 	unsigned int iteration = 0;
 	unsigned int max_iter = 1000;
 
-	//for (size_t k = 0; k < n; ++k) 
-
 	do
 	{
 		vector<double> Ap = (*this)*p;
+		/*for (int i = 0; i < Ap.size(); i++)
+		{
+			cout << Ap[i] << " ";
+		}
+		cout << endl;*/
 		double alpha = scalar_product(r, r) / scalar_product(p, Ap);
 
 		for (size_t i = 0; i < n; ++i) 
@@ -685,10 +740,10 @@ vector<double> Matrix::CG3(vector<double>& b, double tolerance)
 		}
 
 		iteration++;
-	} while (norm_square(r) / b_norm > tolerance * tolerance && iteration < max_iter);
+	} while (norm_square(r) / b_norm > epsilon * epsilon && iteration < max_iter);
 
 	cout << "iterations: " << iteration << endl;
-	cout << "tolerance: " << tolerance << endl;
+	//cout << "tolerance: " << epsilon << endl;
 
 	return x;
 }

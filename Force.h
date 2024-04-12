@@ -11,5 +11,6 @@ public:
 	Force(double3 f, int3 nums);
 	Force& operator=(Force b);
 	double3 GetF();
+	void SetF(double x, double y, double z) { F.x = x; F.y = y; F.z = z; }
 	vector<int> GetNumbersOfNodes();
 };

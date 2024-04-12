@@ -38,7 +38,6 @@ void Restraint::ApplyRestraints(Matrix& K, Restraint R)
 				}
 				else
 				{
-
 					K.Set(2 * nodes[i] - 2, j, 0.0);	//out of range
 					K.Set(j, 2 * nodes[i] - 2, 0.0);	//out of range
 				}
@@ -53,6 +52,70 @@ void Restraint::ApplyRestraints(Matrix& K, Restraint R)
 				{
 					K.Set(2 * nodes[i] - 1, j, 0.0);
 					K.Set(j, 2 * nodes[i] - 1, 0.0);
+				}
+			}
+		}
+	}
+}
+
+void Restraint::ApplyRestraintsLocal(DivisionToLocalsTri& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums)
+{
+	vector<int> nodes = R.GetNumbersOfNodes();
+	for (int i = 0; i < nodes.size(); i++)		//идём по закреплённым узлам
+	{
+		for (int j = 0; j < list_nodes_with_elem_nums[nodes[i]-1].size(); j++)	//идём по элементам, которым принадлежат закреп узлы
+		{
+			for (int k = 0; k < 3; k++)			//идём по локальным номерам узлов каждого рассматриваемого элемента
+			{
+				if (list_elements_with_nodes[list_nodes_with_elem_nums[nodes[i] - 1][j]].n[k] == nodes[i]-1)	//если номер локального узла совпадает с рассматриваемым закреплённым
+				{
+					if (R.GetFlag()[0])
+					{
+						L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].UnitRowAndColumn(2*k, 2*k, list_nodes_with_elem_nums[nodes[i] - 1].size());			//функция "вычёркивания" строки и столбца (меняем числа на 1 и 0)
+					}
+					if (R.GetFlag()[1])
+					{
+						L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].UnitRowAndColumn(2*k+1, 2*k+1, list_nodes_with_elem_nums[nodes[i] - 1].size());
+					}
+				}
+			}
+		}
+	}
+}
+
+void Restraint::ApplyRestraintsLocal2(DivisionToLocalsTri& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums)
+{
+	vector<int> nodes = R.GetNumbersOfNodes();
+	for (int i = 0; i < nodes.size(); i++)		//идём по закреплённым узлам
+	{
+		for (int k = 0; k < 3; k++)			//идём по локальным номерам узлов каждого рассматриваемого элемента
+		{
+			if (list_elements_with_nodes[list_nodes_with_elem_nums[nodes[i] - 1][0]].n[k] == nodes[i] - 1)	//если номер локального узла совпадает с рассматриваемым закреплённым
+			{
+				if (R.GetFlag()[0])
+				{
+					L.M[list_nodes_with_elem_nums[nodes[i] - 1][0]].UnitRowAndColumn(2 * k, 2 * k, 1);			//функция "вычёркивания" строки и столбца (меняем числа на 1 и 0)
+				}
+				if (R.GetFlag()[1])
+				{
+					L.M[list_nodes_with_elem_nums[nodes[i] - 1][0]].UnitRowAndColumn(2 * k + 1, 2 * k + 1, 1);
+				}
+			}
+		}
+		for (int j = 1; j < list_nodes_with_elem_nums[nodes[i] - 1].size(); j++)	//идём по элементам, которым принадлежат закреп узлы
+		{
+			for (int k = 0; k < 3; k++)			//идём по локальным номерам узлов каждого рассматриваемого элемента
+			{
+				if (list_elements_with_nodes[list_nodes_with_elem_nums[nodes[i] - 1][j]].n[k] == nodes[i] - 1)	//если номер локального узла совпадает с рассматриваемым закреплённым
+				{
+					if (R.GetFlag()[0])
+					{
+						L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].ZeroRowAndColumn(2 * k, 2 * k);			//функция "вычёркивания" строки и столбца (меняем числа на 1 и 0)
+					}
+					if (R.GetFlag()[1])
+					{
+						L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].ZeroRowAndColumn(2 * k + 1, 2 * k + 1);
+					}
 				}
 			}
 		}

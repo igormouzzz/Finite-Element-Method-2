@@ -2,7 +2,7 @@
 #include "Element.h"
 #include "Force.h"
 #include "Restraint.h"
-#include "Local.h"
+//#include "Local.h"
 
 int Example()
 {
@@ -19,7 +19,7 @@ int Example()
 	vector<double> x1 = A.Gauss(b);
 	for (int i = 0; i < x1.size(); i++) cout << x1[i] << " ";
 	cout << endl;
-	vector<double> x2 = A.CG3(b, pow(10, -4));
+	vector<double> x2 = A.CG3(b);
 	for (int i = 0; i < x2.size(); i++) cout << x2[i] << " ";
 	cout << endl;
 
@@ -32,17 +32,15 @@ int Task()
 	char timestamp1[100], timestamp2[100];
 	int t = 0;
 	double sec = 0;
-	timespec_get(&ts1, TIME_UTC);
 	vector<double3> list_of_nodes_with_coords;
 	vector<vc> list_elements_with_nodes;
+	vector<vector<int>> list_nodes_with_elem_nums;
 	double E, Nu;
 	Force F;
 	vector<Restraint> R;
 	int number_of_nodes_of_elem = 0;
-	Read(list_of_nodes_with_coords, list_elements_with_nodes, F, R, E, Nu, number_of_nodes_of_elem);
+	Read(list_of_nodes_with_coords, list_elements_with_nodes, F, R, E, Nu, number_of_nodes_of_elem, list_nodes_with_elem_nums);
 	cout << endl << endl;
-
-	
 
 	Material mat(E, Nu);
 
@@ -68,14 +66,18 @@ int Task()
 		matrices[i] = elements[i].CreateMatrixK();
 	}
 	
+	timespec_get(&ts1, TIME_UTC);
+
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
-	cout << K.GetN() << endl;
 
 	for (int k = 0; k < R.size(); k++)
 	{
 		Restraint::ApplyRestraints(K, R[k]);
 	}
 
+	ofstream p("K.txt");
+	p << K << endl;
+	
 	vector<double> b(K.GetN());
 	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
 	{
@@ -84,12 +86,13 @@ int Task()
 		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
 	}
 	
-	vector<double> X = K.CG3(b, 0.0001);
-	/*for (int i = 0; i < X.size(); i++)
+	vector<double> X = K.CG3(b);
+	ofstream xx("X.txt");
+	for (int i = 0; i < X.size(); i++)
 	{
-		cout << X[i] << " ";
+		xx << X[i] << endl;
 	}
-	cout << endl;*/
+	xx << endl;
 
 	timespec_get(&ts2, TIME_UTC);
 	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
@@ -99,13 +102,6 @@ int Task()
 	cout << timestamp2 << ts2.tv_nsec << endl;
 	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
 	cout << sec << endl;
-
-	ofstream x("X.txt");
-	for (int i = 0; i < X.size(); i++)
-	{
-		x << X[i] << " ";
-	}
-	x << endl;
 
 	vector<Strains> Epsilon(element_count);
 	vector<Stresses> Sigma(element_count);
@@ -157,17 +153,15 @@ int Task2()
 	char timestamp1[100], timestamp2[100];
 	int t = 0;
 	double sec = 0;
-	timespec_get(&ts1, TIME_UTC);
 	vector<double3> list_of_nodes_with_coords;
 	vector<vc> list_elements_with_nodes;
+	vector<vector<int>> list_nodes_with_elem_nums;
 	double E, Nu;
 	Force F;
 	vector<Restraint> R;
 	int number_of_nodes_of_elem = 0;
-	Read(list_of_nodes_with_coords, list_elements_with_nodes, F, R, E, Nu, number_of_nodes_of_elem);
+	Read(list_of_nodes_with_coords, list_elements_with_nodes, F, R, E, Nu, number_of_nodes_of_elem, list_nodes_with_elem_nums);
 	cout << endl << endl;
-
-
 
 	Material mat(E, Nu);
 
@@ -193,50 +187,49 @@ int Task2()
 		matrices[i] = elements[i].CreateMatrixK();
 	}
 
-	/*
+	vector<int> F_nodes = F.GetNumbersOfNodes();
+	
+	timespec_get(&ts1, TIME_UTC);
+
+	vector<double> b(2*node_count);
 	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
 	{
-		cout << F.GetNumbersOfNodes()[i] << " ";
+		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
+		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
 	}
-	cout << endl;
-	*/
-	vector<int> F_nodes = F.GetNumbersOfNodes();
-	vector<double> ElemForces(2 * COUNT_OF_NODES * elements.size());
-	for (int i = 0; i < list_elements_with_nodes.size();)
+
+	vector<int> n_adjelem(node_count);
+	for (int i = 0; i < elements.size(); i++)
 	{
 		for (int j = 0; j < COUNT_OF_NODES; j++)
 		{
-			for (int k = 0; k < F_nodes.size(); k++)
-			{
-				if (list_elements_with_nodes[i].n[j] == F_nodes[k] - 1)
-				{
-					ElemForces[i + 2 * j] = F.GetF().x;
-					ElemForces[i + 2 * j + 1] = F.GetF().y;
-				}
-			}
+			n_adjelem[list_elements_with_nodes[i].n[j]]++;
 		}
-		i += 2 * COUNT_OF_NODES;
 	}
 
 #if COUNT_OF_NODES == 3
-	DivisionToLocalsTri Local(ElemForces, matrices);
+	DivisionToLocalsTri Local(b, n_adjelem, list_elements_with_nodes, matrices);
 #else
-	DivisionToLocalsFour Local(ElemForces, matrices);
+	DivisionToLocalsFour Local(b, n_adjelem, list_elements_with_nodes, matrices);
 #endif
-
-	//Local.PrintVector();
 	
-	vector<vector<double>> X_local = Local.SolveCG();
-
-	for (int i = 0; i < X_local.size(); i++)
+	for (int k = 0; k < R.size(); k++)
 	{
-		for (int j = 0; j < 2 * COUNT_OF_NODES; j++)
-		{
-			cout << X_local[i][j] << " ";
-		}
-		cout << endl;
+		Restraint::ApplyRestraintsLocal(Local, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
+
+	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, Local.GetMatrices(), nums);
+	ofstream p("K2.txt");
+	p << K << endl;
 	
+	vector<double> X = Local.CG4(b);
+	ofstream xx("X2.txt");
+	for (int i = 0; i < X.size(); i++)
+	{
+		xx << X[i] << endl;
+	}
+	xx << endl;
+
 	timespec_get(&ts2, TIME_UTC);
 	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
 	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
@@ -246,7 +239,7 @@ int Task2()
 	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
 	cout << sec << endl;
 
-	/*
+	
 	vector<Strains> Epsilon(element_count);
 	vector<Stresses> Sigma(element_count); 
 	
@@ -255,8 +248,8 @@ int Task2()
 		Epsilon[i] = Element::FindStrains(X, list_of_nodes_with_coords, list_elements_with_nodes, elements[i], i);
 		Sigma[i] = Element::FindStresses(X, list_of_nodes_with_coords, list_elements_with_nodes, elements[i], i);
 	}
-	ofstream f3("strains.txt");
-	ofstream f4("stresses.txt");
+	ofstream f3("strains2.txt");
+	ofstream f4("stresses2.txt");
 	//cout << Epsilon.size() << endl;
 	for (int i = 0; i < Epsilon.size(); i++)
 	{
@@ -264,7 +257,7 @@ int Task2()
 		f4 << Sigma[i];
 	}
 
-	ofstream f5("nodes.txt");
+	ofstream f5("nodes2.txt");
 	for (int i = 0; i < list_elements_with_nodes.size(); i++)
 	{
 #if COUNT_OF_NODES == 3
@@ -274,19 +267,19 @@ int Task2()
 #endif
 	}
 	f5.close();
-	ofstream f6("coord.txt");
+	ofstream f6("coord2.txt");
 	for (int i = 0; i < list_of_nodes_with_coords.size(); i++)
 	{
 		f6 << list_of_nodes_with_coords[i].x << " " << list_of_nodes_with_coords[i].y << endl;
 	}
 	f6.close();
 
-	ofstream f7("elements.txt");
+	ofstream f7("elements2.txt");
 	for (int i = 0; i < elements.size(); i++)
 	{
 		elements[i].PrintToFile(f7);
 	}
 	f7.close();
-	*/
+	
 	return 0;
 }

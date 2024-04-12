@@ -34,6 +34,7 @@ public:
 	void SetMaterial(Material m) { mat = m; }
 	Matrix CreateMatrixK();
 	void CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i);
+	double2 GetCoord(int i) { return coord[i]; }
 	void Print();
 	void PrintToFile(ofstream& f);
 };

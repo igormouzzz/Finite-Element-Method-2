@@ -54,9 +54,10 @@ public:
 	vector<double> Gauss(vector<double>& b);
 	vector<double> CG(vector<double>& b);
 	vector<double> CG2(vector<double>& b, double tolerance);
-	vector<double> CG3(vector<double>& b, double tolerance);
+	vector<double> CG3(vector<double>& b);
 
 	void ToCSR(ofstream& f);
-
 	double SumOfComponentsForProduct(vector<double>& b);
+	void UnitRowAndColumn(int i, int j, int n);
+	void ZeroRowAndColumn(int i, int j);
 };
