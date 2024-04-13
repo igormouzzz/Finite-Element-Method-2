@@ -1,6 +1,7 @@
 #include "Header.h"
 #include "Force.h"
 #include "Restraint.h"
+#include <fstream>
 
 double det2(double a11, double a12, double a21, double a22)
 {
@@ -11,7 +12,7 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 	return a11 * det2(a22, a23, a32, a33) - a12 * det2(a21, a23, a31, a33) + a13 * det2(a21, a22, a31, a32);
 }
 
-int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem, vector<vector<int>>& list_nodes_with_elem_nums)
+int Read(vector<double3_>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem, vector<vector<int>>& list_nodes_with_elem_nums)
 {
 	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys03.fc";
 	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga Igor/FC files/fidesys11.fc";
@@ -119,7 +120,7 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 		data[i] = *reinterpret_cast<const double*>(data1[i].c_str());
 		//cout << "data[" << i << "] = " << data[i] << endl;
 	}
-	double3 f; f.x = data[0]; f.y = data[1]; f.z = data[2];
+	double3_ f; f.x = data[0]; f.y = data[1]; f.z = data[2];
 
 	F = Force(f, v);
 	
@@ -160,7 +161,7 @@ int Read(vector<double3>& pt_list, vector<vc>& hex_list, Force& F, vector<Restra
 			//cout << "data[" << i << "] = " << data[i] << endl;
 		}
 
-		double3 r; r.x = data[0]; r.y = data[1]; r.z = data[2];
+		double3_ r; r.x = data[0]; r.y = data[1]; r.z = data[2];
 		R.push_back(Restraint(r, w, flag));
 	}
 

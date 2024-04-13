@@ -1,11 +1,11 @@
 #include "Force.h"
 
 Force::Force() {}
-Force::Force(double3 f, vector<int> nums)
+Force::Force(double3_ f, vector<int> nums)
 {
 	F = f; nodes = nums;
 }
-Force::Force(double3 f, int3 nums)
+Force::Force(double3_ f, int3_ nums)
 {
 	F = f;
 	nodes.resize(3);
@@ -17,5 +17,5 @@ Force& Force::operator=(Force b)
 	nodes = b.nodes;
 	return *this;
 }
-double3 Force::GetF() { return F; }
+double3_ Force::GetF() { return F; }
 vector<int> Force::GetNumbersOfNodes() { return nodes; }

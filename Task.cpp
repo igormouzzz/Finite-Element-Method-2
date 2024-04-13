@@ -3,6 +3,7 @@
 #include "Force.h"
 #include "Restraint.h"
 //#include "Local.h"
+#include <fstream>
 
 int Example()
 {
@@ -32,7 +33,7 @@ int Task()
 	char timestamp1[100], timestamp2[100];
 	int t = 0;
 	double sec = 0;
-	vector<double3> list_of_nodes_with_coords;
+	vector<double3_> list_of_nodes_with_coords;
 	vector<vc> list_elements_with_nodes;
 	vector<vector<int>> list_nodes_with_elem_nums;
 	double E, Nu;
@@ -66,6 +67,13 @@ int Task()
 		matrices[i] = elements[i].CreateMatrixK();
 	}
 	
+	vector<double> b(2 * node_count);
+	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
+	{
+		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
+		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
+	}
+
 	timespec_get(&ts1, TIME_UTC);
 
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
@@ -75,16 +83,8 @@ int Task()
 		Restraint::ApplyRestraints(K, R[k]);
 	}
 
-	ofstream p("K.txt");
-	p << K << endl;
-	
-	vector<double> b(K.GetN());
-	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
-	{
-		//cout << F.GetNumbersOfNodes()[i] << " ";
-		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
-		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
-	}
+	//ofstream p("K.txt");
+	//p << K << endl;
 	
 	vector<double> X = K.CG3(b);
 	ofstream xx("X.txt");
@@ -113,7 +113,7 @@ int Task()
 	}
 	ofstream f3("strains.txt");
 	ofstream f4("stresses.txt");
-	//cout << Epsilon.size() << endl;
+	//cout << eps.size() << endl;
 	for (int i = 0; i < Epsilon.size(); i++)
 	{
 		f3 << Epsilon[i];
@@ -153,7 +153,7 @@ int Task2()
 	char timestamp1[100], timestamp2[100];
 	int t = 0;
 	double sec = 0;
-	vector<double3> list_of_nodes_with_coords;
+	vector<double3_> list_of_nodes_with_coords;
 	vector<vc> list_elements_with_nodes;
 	vector<vector<int>> list_nodes_with_elem_nums;
 	double E, Nu;
@@ -188,8 +188,6 @@ int Task2()
 	}
 
 	vector<int> F_nodes = F.GetNumbersOfNodes();
-	
-	timespec_get(&ts1, TIME_UTC);
 
 	vector<double> b(2*node_count);
 	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
@@ -197,6 +195,8 @@ int Task2()
 		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
 		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
 	}
+
+	timespec_get(&ts1, TIME_UTC);
 
 	vector<int> n_adjelem(node_count);
 	for (int i = 0; i < elements.size(); i++)
@@ -218,9 +218,9 @@ int Task2()
 		Restraint::ApplyRestraintsLocal(Local, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
 
-	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, Local.GetMatrices(), nums);
-	ofstream p("K2.txt");
-	p << K << endl;
+	//Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, Local.GetMatrices(), nums);
+	//ofstream p("K2.txt");
+	//p << K << endl;
 	
 	vector<double> X = Local.CG4(b);
 	ofstream xx("X2.txt");
@@ -250,7 +250,7 @@ int Task2()
 	}
 	ofstream f3("strains2.txt");
 	ofstream f4("stresses2.txt");
-	//cout << Epsilon.size() << endl;
+	//cout << eps.size() << endl;
 	for (int i = 0; i < Epsilon.size(); i++)
 	{
 		f3 << Epsilon[i];

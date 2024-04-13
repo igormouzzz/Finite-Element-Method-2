@@ -1,7 +1,7 @@
 #include "Element.h"
 
 QuadElement::QuadElement() {}
-QuadElement::QuadElement(vector<double3> a, Material m)
+QuadElement::QuadElement(vector<double3_> a, Material m)
 {
 	for (int i = 0; i < a.size(); i++)
 	{
@@ -10,7 +10,7 @@ QuadElement::QuadElement(vector<double3> a, Material m)
 	}
 	mat = m;
 }
-QuadElement::QuadElement(vector<double2> a, Material m)
+QuadElement::QuadElement(vector<double2_> a, Material m)
 {
 	for (int i = 0; i < a.size(); i++)
 	{
@@ -86,9 +86,9 @@ Matrix QuadElement::CreateMatrixB(double ksi, double eta)
 
 	return B;
 }
-double2 QuadElement::GetCentre()
+double2_ QuadElement::GetCentre()
 {
-	double2 c, sum;
+	double2_ c, sum;
 	sum.x = sum.y = 0;
 	for (int i = 0; i < 4; i++)
 	{
@@ -110,10 +110,10 @@ Matrix QuadElement::CreateMatrixK()
 	}
 	return K;
 }
-void QuadElement::CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
+void QuadElement::CreateElement(vector<double3_>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
 {
 	vector<QuadElement> elems2(pt_list.size());
-	vector<double3> coord_of_element_nodes(4);
+	vector<double3_> coord_of_element_nodes(4);
 	for (int j = 0; j < 4; j++)
 	{
 		coord_of_element_nodes[j] = pt_list[hex_list[i].n[j]];
@@ -135,7 +135,7 @@ void QuadElement::PrintToFile(ofstream& f)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		f << coord[i].x << " " << coord[i].y << endl;
+		//f << coord[i].x << " " << coord[i].y << endl;
 	}
 	//f << endl;
 }

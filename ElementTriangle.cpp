@@ -1,7 +1,7 @@
 #include "Element.h"
 
 TriangularElement::TriangularElement() {}
-TriangularElement::TriangularElement(vector<double3> a, Material m)
+TriangularElement::TriangularElement(vector<double3_> a, Material m)
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -10,7 +10,7 @@ TriangularElement::TriangularElement(vector<double3> a, Material m)
 	}
 	mat = m;
 }
-TriangularElement::TriangularElement(vector<double2> a, Material m)
+TriangularElement::TriangularElement(vector<double2_> a, Material m)
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -62,10 +62,10 @@ Matrix TriangularElement::CreateMatrixK()
 	Matrix B = CreateMatrixB();
 	return B.T() * A * B * Delta;
 }
-void TriangularElement::CreateElement(vector<double3>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
+void TriangularElement::CreateElement(vector<double3_>& pt_list, vector<vc>& hex_list, vector<vc>& nums, int i)
 {
 	vector<TriangularElement> elems2(pt_list.size());
-	vector<double3> coord_of_element_nodes(3);
+	vector<double3_> coord_of_element_nodes(3);
 	for (int j = 0; j < 3; j++)
 	{
 		coord_of_element_nodes[j] = pt_list[hex_list[i].n[j]];
@@ -87,7 +87,7 @@ void TriangularElement::PrintToFile(ofstream& f)
 {
 	for (int i = 0; i < 3; i++)
 	{
-		f << coord[i].x << " " << coord[i].y << endl;
+		//f << coord[i].x << " " << coord[i].y << endl;
 	}
 	//f << endl;
 }

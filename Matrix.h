@@ -35,6 +35,7 @@ public:
 	Matrix operator*(double k);
 	Matrix operator*(const Matrix& b);
 	vector<double> operator*(vector<double>& b);
+	const vector<double> operator*(const vector<double>& b);
 	Matrix T();
 	void Symmetric();
 	double SumInRow(int k);
@@ -60,4 +61,20 @@ public:
 	double SumOfComponentsForProduct(vector<double>& b);
 	void UnitRowAndColumn(int i, int j, int n);
 	void ZeroRowAndColumn(int i, int j);
+	friend const vector<double> operator*(const Matrix& Mat, const vector<double>& b);
 };
+const vector<double> operator*(const Matrix& Mat, const vector<double>& b);
+const vector<double> operator*(const Matrix& Mat, const vector<double>& b)
+{
+	vector<double> s(b.size());
+	#pragma omp parallel for
+	for (int i = 0; i < s.size(); i++)
+	{
+		for (int j = 0; j < s.size(); j++)
+		{
+			s[i] += Mat.a[i][j] * b[j];
+		}
+	}
+	const vector<double> s1 = s;
+	return s1;
+}

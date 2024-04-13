@@ -1,11 +1,11 @@
 #include "Restraint.h"
 
 Restraint::Restraint() {}
-Restraint::Restraint(double3 f, vector<int> nums, vector<int> flags)
+Restraint::Restraint(double3_ f, vector<int> nums, vector<int> flags)
 {
 	F = f; nodes = nums; flag = flags;
 }
-Restraint::Restraint(double3 f, vc nums, vector<int> flags)
+Restraint::Restraint(double3_ f, vc nums, vector<int> flags)
 {
 	F = f;
 	nodes.resize(3);
@@ -19,7 +19,7 @@ Restraint& Restraint::operator=(Restraint b)
 	flag = b.flag;
 	return *this;
 }
-double3 Restraint::GetF() { return F; }
+double3_ Restraint::GetF() { return F; }
 vector<int> Restraint::GetNumbersOfNodes() { return nodes; }
 vector<int> Restraint::GetFlag() { return flag; }
 

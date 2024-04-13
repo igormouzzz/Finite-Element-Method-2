@@ -1,4 +1,9 @@
 #include "Local.h"
+#include <sycl/sycl.hpp>
+#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
+#include <sycl/ext/intel/fpga_extensions.hpp>
+#endif
+
 
 DivisionToLocalsTri::DivisionToLocalsTri(vector<double>& b, vector<int>& n_adj, vector<vc>& list_elements_with_nodes2, vector<Matrix>& matricies)
 {
@@ -12,11 +17,29 @@ DivisionToLocalsTri::DivisionToLocalsTri(vector<double>& b, vector<int>& n_adj, 
 vector<vector_loc> DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc)
 {
 	vector<vector_loc> b_loc(M.size());
-#pragma omp parallel for
-	for (int i = 0; i < M.size(); i++)
+	//#pragma omp parallel for
+	/*for (int i = 0; i < M.size(); i++)
 	{
 		b_loc[i] = M[i] * x_loc[i];
-	}
+	}*/
+	size_t n = M.size();
+
+	sycl::queue q(sycl::default_selector{});
+
+	sycl::buffer <Matrix, 1> d_M{ M.data(), sycl::range<1>(n) };
+	sycl::buffer <vector_loc, 1> d_x_loc{ x_loc.data(), sycl::range<1>(n) };
+	sycl::buffer <vector_loc, 1> d_b_loc{ b_loc.data(), sycl::range<1>(n) };
+
+	q.submit([&](sycl::handler& h) {
+		auto pM = d_M.get_access<sycl::access::mode::read>(h);
+		auto px_loc = d_x_loc.get_access<sycl::access::mode::read>(h);
+		auto pb_loc = d_b_loc.get_access<sycl::access::mode::write>(h);
+
+		h.parallel_for<class saxpy>(sycl::range<1>(n), [=](sycl::id<1> it) {
+			pb_loc[it] = pM[it] * px_loc[it];
+		});
+	});
+
 	return b_loc;
 }
 
@@ -186,10 +209,10 @@ vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 			p[i] = r[i] + beta * p[i];
 		}
 		iteration++;
-	} while (norm_square(r) / b_norm > epsilon * epsilon && iteration < max_iter);
+	} while (norm_square(r) / b_norm > eps * eps && iteration < max_iter);
 
 	cout << "iterations: " << iteration << endl;
-	//cout << "tolerance: " << epsilon << endl;
+	//cout << "tolerance: " << eps << endl;
 
 	return x;
 }

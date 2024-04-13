@@ -214,6 +214,11 @@ vector<double> Matrix::operator*(vector<double>& b)
 		return s;
 	}
 }
+const vector<double> Matrix::operator*(const vector<double>& b)
+{
+	const vector<double> s = (*this) * b;
+	return s;
+}
 Matrix Matrix::T()
 {
 	Matrix S(M, N);
@@ -457,9 +462,9 @@ void Matrix::ToCSR(ofstream& f)
 			}
 		}
 	}
-	f << N << " " << non_zero << endl;
+	//f << N << " " << non_zero << endl;
 	
-	f << 0;
+	//f << 0;
 	for (int i = 0; i < N; i++)
 	{
 		//non_zero_in_rows = 0;
@@ -470,22 +475,22 @@ void Matrix::ToCSR(ofstream& f)
 				non_zero_in_rows++;
 			}
 		}
-		f << " " << non_zero_in_rows;
+		//f << " " << non_zero_in_rows;
 	}
-	f << endl;
+	//f << endl;
 
-	f << 0;
+	//f << 0;
 	for (int j = 0; j < M; j++)
 	{
 		for (int i = 0; i < N; i++)
 		{
 			if (abs(a[i][j]) > 1e-5)
 			{
-				f << " " << j;
+				//f << " " << j;
 			}
 		}
 	}
-	f << endl;
+	//f << endl;
 	
 	for (int i = 0; i < N; i++)
 	{
@@ -493,7 +498,7 @@ void Matrix::ToCSR(ofstream& f)
 		{
 			if (abs(a[i][j]) > 1e-5)
 			{
-				f << a[i][j] << " ";
+				//f << a[i][j] << " ";
 			}
 		}
 	}
@@ -616,7 +621,7 @@ vector<double> Matrix::CG(vector<double>& b)
 			Zk[i] = Rk[i] + beta * Zk[i];
 	}
 	/* ѕровер€ем условие выхода из итерационного цикла  */
-	while (Spr1 / mf > epsilon * epsilon && Iteration < max_iter);
+	while (Spr1 / mf > eps * eps && Iteration < max_iter);
 
 	cout << "kol-vo iter: " << kl << endl;
 
@@ -740,10 +745,10 @@ vector<double> Matrix::CG3(vector<double>& b)
 		}
 
 		iteration++;
-	} while (norm_square(r) / b_norm > epsilon * epsilon && iteration < max_iter);
+	} while (norm_square(r) / b_norm > eps * eps && iteration < max_iter);
 
 	cout << "iterations: " << iteration << endl;
-	//cout << "tolerance: " << epsilon << endl;
+	//cout << "tolerance: " << eps << endl;
 
 	return x;
 }
