@@ -11,6 +11,11 @@ using namespace std;
 #include <omp.h>
 #include <vector>
 
+#include <sycl/sycl.hpp>
+#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
+#include <sycl/ext/intel/fpga_extensions.hpp>
+#endif
+
 using row = vector<double>;
 
 class Matrix
@@ -49,6 +54,7 @@ public:
 	friend class TriangularElement;
 	friend class QuadElement;
 	friend class Material;
+	friend class DivisionToLocalsTri;
 	friend Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 	friend ostream& operator<<(ostream& cout, const Matrix& b);
 
@@ -61,20 +67,4 @@ public:
 	double SumOfComponentsForProduct(vector<double>& b);
 	void UnitRowAndColumn(int i, int j, int n);
 	void ZeroRowAndColumn(int i, int j);
-	friend const vector<double> operator*(const Matrix& Mat, const vector<double>& b);
 };
-const vector<double> operator*(const Matrix& Mat, const vector<double>& b);
-const vector<double> operator*(const Matrix& Mat, const vector<double>& b)
-{
-	vector<double> s(b.size());
-	#pragma omp parallel for
-	for (int i = 0; i < s.size(); i++)
-	{
-		for (int j = 0; j < s.size(); j++)
-		{
-			s[i] += Mat.a[i][j] * b[j];
-		}
-	}
-	const vector<double> s1 = s;
-	return s1;
-}

@@ -16,11 +16,6 @@ void base64_decode(const std::string& encoded_string, std::string& decoded_strin
 #include <typeinfo>
 #define eps 0.01
 
-/*#include <sycl/sycl.hpp>
-#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
-#include <sycl/ext/intel/fpga_extensions.hpp>
-#endif*/
-
 
 #define COUNT_OF_NODES 3
 

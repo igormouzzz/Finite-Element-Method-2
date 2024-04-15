@@ -1,51 +1,76 @@
 #include "Local.h"
-#include <sycl/sycl.hpp>
-#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
-#include <sycl/ext/intel/fpga_extensions.hpp>
-#endif
-
 
 DivisionToLocalsTri::DivisionToLocalsTri(vector<double>& b, vector<int>& n_adj, vector<vc>& list_elements_with_nodes2, vector<Matrix>& matricies)
 {
 	n_adjelem = n_adj;
 	list_elements_with_nodes = list_elements_with_nodes2;
 	M = matricies;
-
-	v = MakeLocalVectors(b);
+	v.resize(b.size());
+	for (int i = 0; i < b.size(); i++)
+	{
+		v[i].resize(6);
+	}
+	MakeLocalVectors(b, v);
 }
 
-vector<vector_loc> DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc)
+void DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc, vector<vector_loc>& b_loc)
 {
-	vector<vector_loc> b_loc(M.size());
 	//#pragma omp parallel for
 	/*for (int i = 0; i < M.size(); i++)
 	{
 		b_loc[i] = M[i] * x_loc[i];
 	}*/
-	size_t n = M.size();
+	
+	sycl::range<1> n { M.size() };
 
-	sycl::queue q(sycl::default_selector{});
+	/*
+	vector<vector<vector<double>>> matr(M.size());
+	for (int k = 0; k < matr.size(); k++)
+	{
+		matr[k].resize(6);
+		for (int i = 0; i < 6; i++)
+		{
+			matr[k][i].resize(6);
+			for (int j = 0; j < 6; j++)
+			{
+				matr[k][i][j] = M[k].a[i][j];
+			}
+		}
+	}
+	*/
 
-	sycl::buffer <Matrix, 1> d_M{ M.data(), sycl::range<1>(n) };
-	sycl::buffer <vector_loc, 1> d_x_loc{ x_loc.data(), sycl::range<1>(n) };
-	sycl::buffer <vector_loc, 1> d_b_loc{ b_loc.data(), sycl::range<1>(n) };
+	sycl::queue q;
+
+	//sycl::buffer <vector<vector<double>>, 1> dM(matr.data(), n);
+	sycl::buffer <vector_loc, 1> dx_loc(x_loc.data(), n);
+	sycl::buffer <vector_loc, 1> db_loc(b_loc.data(), n);
 
 	q.submit([&](sycl::handler& h) {
-		auto pM = d_M.get_access<sycl::access::mode::read>(h);
-		auto px_loc = d_x_loc.get_access<sycl::access::mode::read>(h);
-		auto pb_loc = d_b_loc.get_access<sycl::access::mode::write>(h);
 
-		h.parallel_for<class saxpy>(sycl::range<1>(n), [=](sycl::id<1> it) {
-			pb_loc[it] = pM[it] * px_loc[it];
-		});
+		//sycl::accessor pM(dM, h, sycl::read_only);
+		sycl::accessor px_loc(dx_loc, h, sycl::read_only);
+		sycl::accessor pb_loc(db_loc, h, sycl::write_only);
+
+		h.parallel_for(n, [=](auto it)
+			{
+				for (int i = 0; i < 6; i++)
+				{
+					double val = 0;
+					for (int j = 0; j < 6; j++)
+					{
+						val += px_loc[it][j];
+					}
+					pb_loc[it][i] = val;
+				}
+			});
 	});
-
-	return b_loc;
+	
+	q.wait();
+	
 }
 
-vector<double> DivisionToLocalsTri::MakeGlobalVector(vector<vector_loc>& x_loc)
+void DivisionToLocalsTri::MakeGlobalVector(vector<vector_loc>& x_loc, vector<double>& X)
 {
-	vector<double> X(2*n_adjelem.size());
 	for (int j = 0; j < x_loc.size(); j++)		//b_loc
 	{
 		for (int k = 0; k < 3; k++)
@@ -54,62 +79,18 @@ vector<double> DivisionToLocalsTri::MakeGlobalVector(vector<vector_loc>& x_loc)
 			X[2*list_elements_with_nodes[j].n[k]+1] += x_loc[j][2*k+1];
 		}
 	}
-	
-	for (int i = 0; i < n_adjelem.size(); i++)
-	{
-		//X[2*i] /= n_adjelem[i];
-		//X[2*i+1] /= n_adjelem[i];
-	}
-	return X;
 }
 
-vector<vector_loc> DivisionToLocalsTri::MakeLocalVectors(vector<double>& b)
+void DivisionToLocalsTri::MakeLocalVectors(vector<double>& b, vector<vector_loc>& b_loc)
 {
-	vector<vector_loc> b_loc(list_elements_with_nodes.size());
-	
-	for (int i = 0; i < b_loc.size(); i++) b_loc[i].resize(6);
-
 	for (int i = 0; i < list_elements_with_nodes.size(); i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			b_loc[i][2 * j] = b[2 * list_elements_with_nodes[i].n[j]];// *double(n_adjelem[list_elements_with_nodes[i].n[j]]);	//?
-			b_loc[i][2 * j + 1] = b[2 * list_elements_with_nodes[i].n[j] + 1];// *double(n_adjelem[list_elements_with_nodes[i].n[j]]);
+			b_loc[i][2*j] = b[2 * list_elements_with_nodes[i].n[j]];
+			b_loc[i][2*j+1] = b[2 * list_elements_with_nodes[i].n[j]+1];
 		}
 	}
-	return b_loc;
-}
-
-vector<vector_loc> DivisionToLocalsTri::SolveGauss()
-{
-	vector<vector_loc> X_local(v.size());
-	for (int i = 0; i < X_local.size(); i++)
-	{
-		X_local[i] = M[i].Gauss(v[i]);
-	}
-	return X_local;
-}
-
-vector<double> DivisionToLocalsTri::SolveGaussGlobal()
-{
-	vector<vector_loc> X = SolveGauss();
-	return MakeGlobalVector(X);
-}
-
-vector<vector_loc> DivisionToLocalsTri::SolveCG()
-{
-	vector<vector_loc> X_local(v.size());
-	for (int i = 0; i < X_local.size(); i++)
-	{
-		X_local[i] = M[i].CG3(v[i]);
-	}
-	return X_local;
-}
-
-vector<double> DivisionToLocalsTri::SolveCGGlobal()
-{
-	vector<vector_loc> X = SolveCG();
-	return MakeGlobalVector(X);
 }
 
 void DivisionToLocalsTri::PrintVector()
@@ -187,28 +168,32 @@ vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 	unsigned int iteration = 0;
 	unsigned int max_iter = 1000;
 	
+	vector<vector_loc> p_loc(list_elements_with_nodes.size());
+	vector<vector_loc> Ap_loc(list_elements_with_nodes.size());
+	for (int i = 0; i < p_loc.size(); i++) { p_loc[i].resize(6); Ap_loc[i].resize(6); }
+	vector<double> Ap(2*n_adjelem.size());
+	double alpha, beta;
+
 	do
 	{
-		vector<vector_loc> p_loc = MakeLocalVectors(p);
-		vector<vector_loc> Ap_loc = Multiply(p_loc);
-		vector<double> Ap = MakeGlobalVector(Ap_loc);
-		/*for (int i = 0; i < Ap.size(); i++)
-		{
-			cout << Ap[i] << " ";
-		}
-		cout << endl;*/
-		double alpha = scalar_product(r, r) / scalar_product(p, Ap);
+		//cout << iteration << endl;
+		MakeLocalVectors(p, p_loc);
+		Multiply(p_loc, Ap_loc);
+		MakeGlobalVector(Ap_loc, Ap);
+		alpha = scalar_product(r, r) / scalar_product(p, Ap);
 		for (size_t i = 0; i < n; ++i)
 		{
 			x[i] += alpha * p[i];
 			r[i] -= alpha * Ap[i];
 		}
-		double beta = scalar_product(r, r) / scalar_product(p, p);
+		beta = scalar_product(r, r) / scalar_product(p, p);
 		for (size_t i = 0; i < n; ++i)
 		{
 			p[i] = r[i] + beta * p[i];
 		}
 		iteration++;
+		std::fill(Ap.begin(), Ap.end(), 0);
+		//cout << norm_square(r) / b_norm << endl;
 	} while (norm_square(r) / b_norm > eps * eps && iteration < max_iter);
 
 	cout << "iterations: " << iteration << endl;

@@ -20,25 +20,21 @@ protected:
 	const int size = 6;
 public:
 	DivisionToLocalsTri(vector<double>& W, vector<int>& n_adj, vector<vc>& list_elements_with_nodes2, vector<Matrix>& matricies);
-	vector<vector_loc> Multiply(vector<vector_loc>& x_loc);
-	vector<double> MakeGlobalVector(vector<vector_loc>& x_loc);
-	vector<vector_loc> MakeLocalVectors(vector<double>& b);
+	void Multiply(vector<vector_loc>& x_loc, vector<vector_loc>& b_loc);
+	void MakeGlobalVector(vector<vector_loc>& x_loc, vector<double>& b);
+	void MakeLocalVectors(vector<double>& b, vector<vector_loc>& b_loc);
 	vector<vector_loc> GetV() { return v; }
 	vector<Matrix> GetMatrices() { return M; }
 	void PrintVector();
-
-	vector<vector_loc> SolveGauss();
-	vector<double> SolveGaussGlobal();
-
-	vector<vector_loc> SolveCG();
-	vector<double> SolveCGGlobal();
 
 	vector<double> CG4(vector<double>& b);
 
 	vector<double> Test(vector<double>& b)
 	{
-		vector<vector_loc> b_loc = MakeLocalVectors(b);
-		vector<double> b2 = MakeGlobalVector(b_loc);
+		vector<vector_loc> b_loc(list_elements_with_nodes.size());
+		MakeLocalVectors(b, b_loc);
+		vector<double> b2(2 * n_adjelem.size());
+		MakeGlobalVector(b_loc, b2);
 		return b;
 	}
 	
