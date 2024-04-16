@@ -192,8 +192,8 @@ int Task2()
 	vector<double> b(2*node_count);
 	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
 	{
-		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
-		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
+		b[2 * F_nodes[i] - 2] = F.GetF().x;
+		b[2 * F_nodes[i] - 1] = F.GetF().y;
 	}
 
 	timespec_get(&ts1, TIME_UTC);

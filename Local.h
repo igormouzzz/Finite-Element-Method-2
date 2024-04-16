@@ -20,7 +20,8 @@ protected:
 	const int size = 6;
 public:
 	DivisionToLocalsTri(vector<double>& W, vector<int>& n_adj, vector<vc>& list_elements_with_nodes2, vector<Matrix>& matricies);
-	void Multiply(vector<vector_loc>& x_loc, vector<vector_loc>& b_loc);
+	//void Multiply(vector<vector_loc>& x_loc, vector<vector_loc>& b_loc);
+	void Multiply(vector<double>& matr, vector<double>& xx_loc, vector<double>& bb_loc, vector<vector_loc>& x_loc, vector<vector_loc>& b_loc);
 	void MakeGlobalVector(vector<vector_loc>& x_loc, vector<double>& b);
 	void MakeLocalVectors(vector<double>& b, vector<vector_loc>& b_loc);
 	vector<vector_loc> GetV() { return v; }

@@ -13,7 +13,7 @@ DivisionToLocalsTri::DivisionToLocalsTri(vector<double>& b, vector<int>& n_adj, 
 	MakeLocalVectors(b, v);
 }
 
-void DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc, vector<vector_loc>& b_loc)
+void DivisionToLocalsTri::Multiply(vector<double>& matr, vector<double>& xx_loc, vector<double>& bb_loc, vector<vector_loc>& x_loc, vector<vector_loc>& b_loc)
 {
 	//#pragma omp parallel for
 	/*for (int i = 0; i < M.size(); i++)
@@ -21,52 +21,79 @@ void DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc, vector<vector_loc>
 		b_loc[i] = M[i] * x_loc[i];
 	}*/
 	
-	sycl::range<1> n { M.size() };
+	/*int SIZE = M.size();
 
-	/*
-	vector<vector<vector<double>>> matr(M.size());
-	for (int k = 0; k < matr.size(); k++)
+	vector<double> matr(36 * SIZE);
+	vector<double> xx_loc(6 * SIZE);
+	vector<double> bb_loc(6 * SIZE);
+
+	for (int k = 0; k < SIZE; k++)
 	{
-		matr[k].resize(6);
 		for (int i = 0; i < 6; i++)
 		{
-			matr[k][i].resize(6);
 			for (int j = 0; j < 6; j++)
 			{
-				matr[k][i][j] = M[k].a[i][j];
+				matr[36 * k + 6 * i + j] = M[k].a[i][j];
 			}
 		}
-	}
-	*/
+	}*/
 
+	/*
+	int SIZE = M.size();
+	for (int k = 0; k < SIZE; k++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			xx_loc[6 * k + i] = x_loc[k][i];
+		}
+	}
+	for (int k = 0; k < SIZE; k++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			bb_loc[6 * k + i] = b_loc[k][i];
+		}
+	}
+
+	sycl::range<1> n { M.size() };
 	sycl::queue q;
 
-	//sycl::buffer <vector<vector<double>>, 1> dM(matr.data(), n);
-	sycl::buffer <vector_loc, 1> dx_loc(x_loc.data(), n);
-	sycl::buffer <vector_loc, 1> db_loc(b_loc.data(), n);
+	sycl::buffer <double, 1> dM(matr.data(), 36*SIZE);
+	sycl::buffer <double, 1> dx_loc(xx_loc.data(), 6*SIZE);
+	sycl::buffer <double, 1> db_loc(bb_loc.data(), 6*SIZE);
 
 	q.submit([&](sycl::handler& h) {
 
-		//sycl::accessor pM(dM, h, sycl::read_only);
+		sycl::accessor pM(dM, h, sycl::read_only);
 		sycl::accessor px_loc(dx_loc, h, sycl::read_only);
 		sycl::accessor pb_loc(db_loc, h, sycl::write_only);
 
-		h.parallel_for(n, [=](auto it)
+		h.parallel_for(n, [=](auto k)
 			{
 				for (int i = 0; i < 6; i++)
 				{
 					double val = 0;
 					for (int j = 0; j < 6; j++)
 					{
-						val += px_loc[it][j];
+						val += pM[36 * k + 6 * i + j] * px_loc[6 * k + j];
 					}
-					pb_loc[it][i] = val;
+					pb_loc[6 * k + i] = val;
 				}
+				
 			});
 	});
 	
 	q.wait();
+
 	
+	for (int k = 0; k < b_loc.size(); k++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			b_loc[k][i] = bb_loc[6 * k + i];
+		}
+	}
+	*/
 }
 
 void DivisionToLocalsTri::MakeGlobalVector(vector<vector_loc>& x_loc, vector<double>& X)
@@ -158,12 +185,31 @@ double DivisionToLocalsTri::scalar_product_of_locals(vector<vector_loc>& a, vect
 
 vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 {
+	int SIZE = M.size();
+	vector<double> matr(36 * SIZE);
+	vector<double> xx_loc(6 * SIZE);
+	vector<double> bb_loc(6 * SIZE);
+
+	for (int k = 0; k < SIZE; k++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				matr[36 * k + 6 * i + j] = M[k].a[i][j];
+			}
+		}
+	}
+
 	double b_norm = norm_square(b);
+	cout << b_norm << endl;
 	if (b_norm == 0) return vector<double>(b.size());
 	int n = b.size();
 	vector<double> x(n, 0.0);  // Initial guess for the solution
 	vector<double> r = b;      // Residual vector
 	vector<double> p = b;      // Search direction vector
+
+	
 
 	unsigned int iteration = 0;
 	unsigned int max_iter = 1000;
@@ -174,13 +220,69 @@ vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 	vector<double> Ap(2*n_adjelem.size());
 	double alpha, beta;
 
+	sycl::queue q;
+
+	sycl::buffer <double, 1> dM(matr.data(), 36 * SIZE);
+	sycl::buffer <double, 1> dx_loc(xx_loc.data(), 6 * SIZE);
+	sycl::buffer <double, 1> db_loc(bb_loc.data(), 6 * SIZE);
+
 	do
 	{
 		//cout << iteration << endl;
 		MakeLocalVectors(p, p_loc);
-		Multiply(p_loc, Ap_loc);
+
+		
+		//Multiply(matr, xx_loc, bb_loc, p_loc, Ap_loc);
+		//
+		for (int k = 0; k < SIZE; k++)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				xx_loc[6 * k + i] = p_loc[k][i];
+			}
+		}
+
+		//sycl::buffer <double, 1> dx_loc(xx_loc.data(), 6 * SIZE);
+		//sycl::buffer <double, 1> db_loc(bb_loc.data(), 6 * SIZE);
+
+		q.submit([&](sycl::handler& h) {
+
+			sycl::accessor pM(dM, h, sycl::read_only);
+			sycl::accessor px_loc(dx_loc, h, sycl::read_only);
+			sycl::accessor pb_loc(db_loc, h, sycl::write_only);
+
+			h.parallel_for(SIZE, [=](auto k)
+				{
+					for (int i = 0; i < 6; i++)
+					{
+						double val = 0;
+						for (int j = 0; j < 6; j++)
+						{
+							val += pM[36 * k + 6 * i + j] * px_loc[6 * k + j];
+						}
+						pb_loc[6 * k + i] = val;
+					}
+
+				});
+			});
+
+		q.wait();
+
+		for (int k = 0; k < Ap_loc.size(); k++)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				Ap_loc[k][i] = bb_loc[6 * k + i];
+				//cout<< bb_loc[6 * k + i]<<" ";
+			}
+		}
+		//cout << endl;
+		//
+		
+		//Multiply(matr, xx_loc, bb_loc, p_loc, Ap_loc);
 		MakeGlobalVector(Ap_loc, Ap);
 		alpha = scalar_product(r, r) / scalar_product(p, Ap);
+		//cout << "alpha = " << alpha << endl;
 		for (size_t i = 0; i < n; ++i)
 		{
 			x[i] += alpha * p[i];
@@ -192,7 +294,9 @@ vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 			p[i] = r[i] + beta * p[i];
 		}
 		iteration++;
-		std::fill(Ap.begin(), Ap.end(), 0);
+
+		fill(Ap.begin(), Ap.end(), 0);
+
 		//cout << norm_square(r) / b_norm << endl;
 	} while (norm_square(r) / b_norm > eps * eps && iteration < max_iter);
 
