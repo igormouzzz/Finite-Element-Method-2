@@ -3,7 +3,7 @@
 int main()
 {
 	//Example();
-	Task();
+	//Task();
 	Task2();
 	Task3();
 

@@ -14,7 +14,7 @@ double det3(double a11, double a12, double a13, double a21, double a22, double a
 
 int Read(vector<double3_>& pt_list, vector<vc>& hex_list, Force& F, vector<Restraint>& R, double& E, double& Nu, int& number_of_nodes_of_elem, vector<vector<int>>& list_nodes_with_elem_nums)
 {
-	string filename = "C:/Users/Igor Volov/Desktop/FC files/fidesys100.fc";
+	string filename = "C:/Users/Igor Volov/Desktop/FC files/Igor14k.fc";
 	//string filename = "C:/Users/kolychev.SALDLAB/Desktop/proga Igor/FC files/fidesys11.fc";
 
 	std::ifstream fc_file(filename, std::ios::in);

@@ -74,8 +74,6 @@ int Task()
 		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
 	}
 
-	timespec_get(&ts1, TIME_UTC);
-
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
 
 	for (int k = 0; k < R.size(); k++)
@@ -86,7 +84,9 @@ int Task()
 	//ofstream p("K.txt");
 	//p << K << endl;
 	
+	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = K.CG3(b);
+	timespec_get(&ts2, TIME_UTC);
 	ofstream xx("X.txt");
 	for (int i = 0; i < X.size(); i++)
 	{
@@ -94,7 +94,6 @@ int Task()
 	}
 	xx << endl;
 
-	timespec_get(&ts2, TIME_UTC);
 	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
 	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
 	t = ts2.tv_nsec - ts1.tv_nsec;
@@ -196,8 +195,6 @@ int Task2()
 		b[2 * F_nodes[i] - 1] = F.GetF().y;
 	}
 
-	timespec_get(&ts1, TIME_UTC);
-
 	vector<int> n_adjelem(node_count);
 	for (int i = 0; i < elements.size(); i++)
 	{
@@ -218,7 +215,9 @@ int Task2()
 		Restraint::ApplyRestraintsLocal(Local, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
 	
+	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = Local.CG4(b);
+	timespec_get(&ts2, TIME_UTC);
 	ofstream xx("X2.txt");
 	for (int i = 0; i < X.size(); i++)
 	{
@@ -226,14 +225,13 @@ int Task2()
 	}
 	xx << endl;
 
-	timespec_get(&ts2, TIME_UTC);
-	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
+	/*strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
 	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
 	t = ts2.tv_nsec - ts1.tv_nsec;
 	cout << timestamp1 << ts1.tv_nsec << endl;
 	cout << timestamp2 << ts2.tv_nsec << endl;
 	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
-	cout << sec << endl;
+	cout << sec << endl;*/
 
 	
 	vector<Strains> Epsilon(element_count);
@@ -329,8 +327,6 @@ int Task3()
 		b[2 * F_nodes[i] - 1] = F.GetF().y;
 	}
 
-	timespec_get(&ts1, TIME_UTC);
-
 	vector<int> n_adjelem(node_count);
 	for (int i = 0; i < elements.size(); i++)
 	{
@@ -350,8 +346,9 @@ int Task3()
 	{
 		Restraint::ApplyRestraintsLocal(Local2, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
-
+	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = Local2.CG4(b);
+	timespec_get(&ts2, TIME_UTC);
 	ofstream xx("X3.txt");
 	for (int i = 0; i < X.size(); i++)
 	{
@@ -359,14 +356,13 @@ int Task3()
 	}
 	xx << endl;
 
-	timespec_get(&ts2, TIME_UTC);
-	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
+	/*strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
 	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
 	t = ts2.tv_nsec - ts1.tv_nsec;
 	cout << timestamp1 << ts1.tv_nsec << endl;
 	cout << timestamp2 << ts2.tv_nsec << endl;
 	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
-	cout << sec << endl;
+	cout << sec << endl;*/
 
 
 	vector<Strains> Epsilon(element_count);

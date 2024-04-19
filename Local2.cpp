@@ -65,10 +65,9 @@ ostream& operator<<(ostream& cout, DivisionToLocals2& b)
 
 vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 {
-	int SIZE = list_elements_with_nodes.size();
-	vector<double> xx_loc(6 * SIZE);
-	vector<double> bb_loc(6 * SIZE);
+	struct timespec ts1, ts2;
 
+	int SIZE = list_elements_with_nodes.size();
 	double b_norm = norm_square(b);
 	//cout << b_norm << endl;
 	if (b_norm == 0) return vector<double>(b.size());
@@ -76,8 +75,6 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 	vector<double> x(n, 0.0);  // Initial guess for the solution
 	vector<double> r = b;      // Residual vector
 	vector<double> p = b;      // Search direction vector
-
-
 
 	unsigned int iteration = 0;
 	unsigned int max_iter = 1000;
@@ -89,17 +86,15 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 
 	sycl::queue q;
 
-	sycl::buffer <double, 1> dM(matr.data(), 36 * SIZE);
+	sycl::buffer <double, 1> dM(matr.data(), 36 * SIZE);	//?
 	sycl::buffer <double, 1> dx_loc(p_loc.data(), 6 * SIZE);
 	sycl::buffer <double, 1> db_loc(Ap_loc.data(), 6 * SIZE);
 
+	timespec_get(&ts1, TIME_UTC);
 	do
 	{
 		//cout << iteration << endl;
 		MakeLocalVectors(p, p_loc);
-
-		//sycl::buffer <double, 1> dx_loc(xx_loc.data(), 6 * SIZE);
-		//sycl::buffer <double, 1> db_loc(bb_loc.data(), 6 * SIZE);
 
 		q.submit([&](sycl::handler& h) {
 
@@ -143,9 +138,13 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 
 		//cout << norm_square(r) / b_norm << endl;
 	} while (norm_square(r) / b_norm > eps * eps && iteration < max_iter);
+	timespec_get(&ts2, TIME_UTC);
 
 	cout << "iterations: " << iteration << endl;
-	//cout << "tolerance: " << eps << endl;
+	cout << endl;
+	int t = ts2.tv_nsec - ts1.tv_nsec;
+	double sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
+	cout << sec << endl;
 
 	return x;
 }

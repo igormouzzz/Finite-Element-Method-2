@@ -121,7 +121,7 @@ Matrix Matrix::operator+(const Matrix& b)
 	else
 	{
 		Matrix S(N, M);
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -143,7 +143,7 @@ Matrix Matrix::operator-(const Matrix& b)
 	else
 	{
 		Matrix S(N, M);
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -158,7 +158,7 @@ Matrix Matrix::operator-(const Matrix& b)
 Matrix Matrix::operator*(double k)
 {
 	Matrix S(N, M);
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -178,7 +178,7 @@ Matrix Matrix::operator*(const Matrix& b)
 	else
 	{
 		Matrix S(N, b.M);
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < b.M; j++)
@@ -203,7 +203,7 @@ vector<double> Matrix::operator*(vector<double>& b)
 	else
 	{
 		vector<double> s(N);
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int i = 0; i < N; i++)
 		{
 			for (int j = 0; j < M; j++)
@@ -222,7 +222,7 @@ const vector<double> Matrix::operator*(const vector<double>& b)
 Matrix Matrix::T()
 {
 	Matrix S(M, N);
-#pragma omp parallel for
+//#pragma omp parallel for
 	for (int i = 0; i < M; i++)
 	{
 		for (int j = 0; j < N; j++)
@@ -257,7 +257,6 @@ void Matrix::UnitRowAndColumn(int k, int l, int n)
 		}
 	}
 }
-
 void Matrix::ZeroRowAndColumn(int k, int l)
 {
 	for (int i = 0; i < N; i++)
