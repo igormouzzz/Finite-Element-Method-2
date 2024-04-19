@@ -86,6 +86,7 @@ int Read(vector<double3_>& pt_list, vector<vc>& hex_list, Force& F, vector<Restr
 Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 int Task();
 int Task2();
+int Task3();
 int Example();
 
 double norm_square(vector<double>& b);

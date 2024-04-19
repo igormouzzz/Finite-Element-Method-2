@@ -55,6 +55,7 @@ public:
 	friend class QuadElement;
 	friend class Material;
 	friend class DivisionToLocalsTri;
+	friend class DivisionToLocalsTri2;
 	friend Matrix MadeGlobalStiffnessMatrix(int element_count, int node_count, vector<Matrix> matrices, vector<vc> nums);
 	friend ostream& operator<<(ostream& cout, const Matrix& b);
 

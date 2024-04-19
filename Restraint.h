@@ -1,6 +1,7 @@
 //#include "Header.h"
 //#include "Matrix.h"
 #include "Local.h"
+#include "Local2.h"
 
 class Restraint
 {
@@ -19,5 +20,6 @@ public:
 	static void ApplyRestraints(Matrix& K, Restraint R);
 	friend class Local;
 	static void ApplyRestraintsLocal(DivisionToLocalsTri& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums);
-	static void ApplyRestraintsLocal2(DivisionToLocalsTri& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums);
+	//static void ApplyRestraintsLocal2(DivisionToLocalsTri& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums);
+	static void ApplyRestraintsLocal2(DivisionToLocalsTri2& L, Restraint R, vector<vc>& list_elements_with_nodes, vector<vector<int>>& list_nodes_with_elem_nums);
 };
