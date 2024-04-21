@@ -121,7 +121,7 @@ vector<double> DivisionToLocalsTri::CG4(vector<double>& b)
 	vector<double> p = b;      // Search direction vector
 
 	unsigned int iteration = 0;
-	unsigned int max_iter = 1000;
+	unsigned int max_iter = 2 * n_adjelem.size();
 	
 	vector<vector_loc> p_loc(list_elements_with_nodes.size());
 	vector<vector_loc> Ap_loc(list_elements_with_nodes.size());

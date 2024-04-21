@@ -95,12 +95,12 @@ void Restraint::ApplyRestraintsLocal2(DivisionToLocalsTri2& L, Restraint R, vect
 				if (R.GetFlag()[0])
 				{
 					//L.M[list_nodes_with_elem_nums[nodes[i] - 1][0]].UnitRowAndColumn(2 * k, 2 * k, 1);			//функция "вычёркивания" строки и столбца (меняем числа на 1 и 0)
-					L.matr[36 * list_nodes_with_elem_nums[nodes[i] - 1][0] + 6 * 2 * k + 2 * k] = 1;
+					L.matr[list_nodes_with_elem_nums[nodes[i] - 1][0]][2 * k][2 * k] = 1;
 				}
 				if (R.GetFlag()[1])
 				{
 					//L.M[list_nodes_with_elem_nums[nodes[i] - 1][0]].UnitRowAndColumn(2 * k + 1, 2 * k + 1, 1);
-					L.matr[36 * list_nodes_with_elem_nums[nodes[i] - 1][0] + 6 * (2*k+1) + 2 * k+1] = 1;
+					L.matr[list_nodes_with_elem_nums[nodes[i] - 1][0]][2*k+1][2*k+1] = 1;
 				}
 			}
 		}
@@ -113,12 +113,12 @@ void Restraint::ApplyRestraintsLocal2(DivisionToLocalsTri2& L, Restraint R, vect
 					if (R.GetFlag()[0])
 					{
 						//L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].ZeroRowAndColumn(2 * k, 2 * k);			//функция "вычёркивания" строки и столбца (меняем числа на 1 и 0)
-						L.matr[36 * list_nodes_with_elem_nums[nodes[i] - 1][j] + 6 * 2 * k + 2 * k] = 0;
+						L.matr[list_nodes_with_elem_nums[nodes[i] - 1][j]][2 * k][2*k] = 0;
 					}
 					if (R.GetFlag()[1])
 					{
 						//L.M[list_nodes_with_elem_nums[nodes[i] - 1][j]].ZeroRowAndColumn(2 * k + 1, 2 * k + 1);
-						L.matr[36 * list_nodes_with_elem_nums[nodes[i] - 1][j] + 6 * (2 * k+1) + 2 * k+1] = 0;
+						L.matr[list_nodes_with_elem_nums[nodes[i] - 1][j]][2 * k + 1][2*k+1] = 0;
 					}
 				}
 			}

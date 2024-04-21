@@ -7,5 +7,7 @@ int main()
 	Task2();
 	Task3();
 
+	//Test();
+
 	return 0;
 }

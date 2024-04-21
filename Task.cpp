@@ -27,6 +27,33 @@ int Example()
 	return 0;
 }
 
+int Test()
+{
+	const size_t size = 10;
+	std::array<int, size> data{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+	sycl::queue queue(sycl::default_selector{});
+
+	sycl::buffer<int, 1> buf(data.data(), sycl::range<1>(size));
+
+	queue.submit([&](sycl::handler& cgh) {
+		auto accessor = buf.get_access<sycl::access::mode::read_write>(cgh);
+
+		cgh.parallel_for<class multiply_by_2>(sycl::range<1>(size), [=](sycl::id<1> idx) {
+			accessor[idx] *= 2;
+			});
+		});
+
+	queue.wait_and_throw();
+
+	for (int i = 0; i < size; ++i) {
+		std::cout << data[i] << " ";
+	}
+	std::cout << std::endl;
+
+	return 0;
+}
+
 int Task()
 {
 	struct timespec ts1, ts2;

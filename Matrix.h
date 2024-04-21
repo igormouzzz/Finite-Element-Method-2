@@ -11,11 +11,6 @@ using namespace std;
 #include <omp.h>
 #include <vector>
 
-#include <sycl/sycl.hpp>
-#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
-#include <sycl/ext/intel/fpga_extensions.hpp>
-#endif
-
 using row = vector<double>;
 
 class Matrix

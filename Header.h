@@ -88,6 +88,7 @@ int Task();
 int Task2();
 int Task3();
 int Example();
+int Test();
 
 double norm_square(vector<double>& b);
 double norm_l1(vector<double>& b);
