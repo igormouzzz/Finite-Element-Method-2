@@ -2,7 +2,7 @@
 #include "Matrix.h"
 using vector_loc = vector<double>;
 
-#include <sycl/sycl.hpp>
+#include <CL/sycl.hpp>
 #if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
 #include <sycl/ext/intel/fpga_extensions.hpp>
 #endif
@@ -18,7 +18,7 @@ public:
 class DivisionToLocalsTri2 : public DivisionToLocals2
 {
 protected:
-	vector<vector_loc> v;	//M*v
+	vector<vector_loc> v;
 	vector<int> n_adjelem;
 	vector<vc> list_elements_with_nodes;
 	vector<vector<vector<double>>> matr;

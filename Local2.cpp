@@ -122,15 +122,17 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 			auto px = dx_loc.get_access<sycl::access::mode::read>(h);
 			auto pb = db_loc.get_access<sycl::access::mode::write>(h);
 
-			h.parallel_for(sycl::range<2>{SIZE, 6}, [=](sycl::item<2> idx)
+			h.parallel_for(sycl::range<1>{SIZE}, [=](auto k)
 				{
-					double val = 0;
-					for (size_t k = 0; k < 6; ++k) 
+					for (int i = 0; i < 6; i++)
 					{
-						val  += px[k][idx[1]];
+						double val = 0;
+						for (int j = 0; j < 6; ++j)
+						{
+							val += pM[k][i][j] * px[k][j];
+						}
+						pb[k][i] = val;
 					}
-					pb[idx[0]][idx[1]] = val;
-
 				});
 			});
 

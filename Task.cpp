@@ -93,27 +93,28 @@ int Task()
 	{
 		matrices[i] = elements[i].CreateMatrixK();
 	}
-	
+	cout << 1 << endl;
 	vector<double> b(2 * node_count);
 	for (int i = 0; i < F.GetNumbersOfNodes().size(); i++)
 	{
 		b[2 * F.GetNumbersOfNodes()[i] - 2] = F.GetF().x;
 		b[2 * F.GetNumbersOfNodes()[i] - 1] = F.GetF().y;
 	}
-
+	cout << 2 << endl;
 	Matrix K = MadeGlobalStiffnessMatrix(element_count, node_count, matrices, nums);
-
+	cout << 3 << endl;
 	for (int k = 0; k < R.size(); k++)
 	{
 		Restraint::ApplyRestraints(K, R[k]);
 	}
-
+	cout << 4 << endl;
 	//ofstream p("K.txt");
 	//p << K << endl;
 	
 	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = K.CG3(b);
 	timespec_get(&ts2, TIME_UTC);
+	cout << 5 << endl;
 	ofstream xx("X.txt");
 	for (int i = 0; i < X.size(); i++)
 	{
