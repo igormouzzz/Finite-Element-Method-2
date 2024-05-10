@@ -1,8 +1,9 @@
 #include "Header.h"
 #include "Matrix.h"
-using vector_loc = vector<double>;
+//using vector_loc = vector<double>;
+//using matrix = vector < array<array<double, 6>, 6>>;
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
 #include <sycl/ext/intel/fpga_extensions.hpp>
 #endif
@@ -21,7 +22,7 @@ protected:
 	vector<vector_loc> v;
 	vector<int> n_adjelem;
 	vector<vc> list_elements_with_nodes;
-	vector<vector<vector<double>>> matr;
+	matrix matr;
 	const int size = 6;
 public:
 	DivisionToLocalsTri2(vector<double>& W, vector<int>& n_adj, vector<vc>& list_elements_with_nodes2, vector<Matrix>& matricies);
@@ -29,7 +30,10 @@ public:
 	void MakeLocalVectors(vector<double>& b, vector<vector_loc>& b_loc);
 	void PrintVector();
 
+	//void Multiply(sycl::queue& q, const vector<vector_loc>& x, vector<vector_loc>& b);
+
 	vector<double> CG4(vector<double>& b);
 
 	friend class Restraint;
+	friend void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b);
 };
