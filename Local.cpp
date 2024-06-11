@@ -23,7 +23,7 @@ void DivisionToLocalsTri::Multiply(vector<vector_loc>& x_loc, vector<vector_loc>
 
 void DivisionToLocalsTri::MakeGlobalVector(vector<vector_loc>& x_loc, vector<double>& X)
 {
-	for (int j = 0; j < x_loc.size(); j++)		//b_loc
+	for (int j = 0; j < x_loc.size(); j++)
 	{
 		for (int k = 0; k < 3; k++)
 		{

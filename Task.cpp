@@ -3,36 +3,36 @@
 #include "Force.h"
 #include "Restraint.h"
 
-void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b)
+/*void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b)
 {
-	sycl::range<1> SIZE{ x.size() };
+	int n = x.size();
 
-	sycl::buffer dM(matr);
-	sycl::buffer dx(x);
-	sycl::buffer db(b);
+	sycl::buffer M_buffer(matr);
+	sycl::buffer x_buffer(x);
+	sycl::buffer b_buffer(b);
 
-	auto task_add = q.submit([&](sycl::handler& h) {
+	auto task_add = q.submit([&](sycl::handler& cgh) {
 
-		sycl::accessor pM(dM, h, sycl::read_only);
-		sycl::accessor px(dx, h, sycl::read_only);
-		sycl::accessor pb(db, h, sycl::write_only, sycl::no_init);
+		sycl::accessor M_accessor(M_buffer, cgh, sycl::read_only);
+		sycl::accessor x_accessor(x_buffer, cgh, sycl::read_only);
+		sycl::accessor b_accessor(b_buffer, cgh, sycl::write_only, sycl::no_init);
 
-		h.parallel_for(SIZE, [=](sycl::id<1> k)
+		cgh.parallel_for(sycl::range<1>(n), [=](sycl::id<1> k)
 			{
 				for (int i = 0; i < 6; ++i)
 				{
 					double val = 0;
 					for (int j = 0; j < 6; ++j)
 					{
-						val += pM[k][i][j] * px[k][j];
+						val += M_accessor[k][i][j] * x_accessor[k][j];
 					}
-					pb[k][i] = val;
+					b_accessor[k][i] = val;
 				}
 			});
 		});
 
 	task_add.wait();
-}
+}*/
 
 int Example()
 {
@@ -78,6 +78,9 @@ int Task()
 	int element_count = int(list_elements_with_nodes.size());
 	int node_count = int(list_of_nodes_with_coords.size());
 
+	cout << "element_count = " << element_count << endl;
+	cout << "node_count = " << node_count << endl;
+
 #if COUNT_OF_NODES == 3
 	vector<TriangularElement> elements(element_count);
 #else
@@ -111,8 +114,6 @@ int Task()
 		Restraint::ApplyRestraints(K, R[k]);
 	}
 	cout << 4 << endl;
-	//ofstream p("K.txt");
-	//p << K << endl;
 	
 	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = K.CG3(b);
@@ -125,11 +126,7 @@ int Task()
 	}
 	xx << endl;
 
-	strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
-	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
 	t = ts2.tv_nsec - ts1.tv_nsec;
-	cout << timestamp1 << ts1.tv_nsec << endl;
-	cout << timestamp2 << ts2.tv_nsec << endl;
 	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
 	cout << sec << endl;
 
@@ -198,6 +195,9 @@ int Task2()
 	int element_count = int(list_elements_with_nodes.size());
 	int node_count = int(list_of_nodes_with_coords.size());
 
+	cout << "element_count = " << element_count << endl;
+	cout << "node_count = " << node_count << endl;
+
 #if COUNT_OF_NODES == 3
 	vector<TriangularElement> elements(element_count);
 #else
@@ -246,6 +246,8 @@ int Task2()
 		Restraint::ApplyRestraintsLocal(Local, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
 	
+	cout << 4 << endl;
+
 	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = Local.CG4(b);
 	timespec_get(&ts2, TIME_UTC);
@@ -330,6 +332,9 @@ int Task3()
 	int element_count = int(list_elements_with_nodes.size());
 	int node_count = int(list_of_nodes_with_coords.size());
 
+	cout << "element_count = " << element_count << endl;
+	cout << "node_count = " << node_count << endl;
+
 #if COUNT_OF_NODES == 3
 	vector<TriangularElement> elements(element_count);
 #else
@@ -358,6 +363,8 @@ int Task3()
 		b[2 * F_nodes[i] - 1] = F.GetF().y;
 	}
 
+	cout << 1 << endl;
+
 	vector<int> n_adjelem(node_count);
 	for (int i = 0; i < elements.size(); i++)
 	{
@@ -366,6 +373,8 @@ int Task3()
 			n_adjelem[list_elements_with_nodes[i].n[j]]++;
 		}
 	}
+
+	cout << 2 << endl;
 
 #if COUNT_OF_NODES == 3
 	DivisionToLocalsTri Local2(b, n_adjelem, list_elements_with_nodes, matrices);
@@ -377,24 +386,40 @@ int Task3()
 	{
 		Restraint::ApplyRestraintsLocal(Local2, R[k], list_elements_with_nodes, list_nodes_with_elem_nums);
 	}
+
+	cout << "Start of writing..." << endl;
+
+	for (int k = 0; k < matrices.size(); k++)
+	{
+		ofstream f("Data58/Matrix" + to_string(k) + ".txt");
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				f << matrices[k].GetForIndicies(i, j) << " ";
+			}
+			f << endl;
+		}
+	}
+	cout << 100 << endl;
+	ofstream f2("Data58/Vector.txt");
+	for (int i = 0; i < b.size(); i++)
+	{
+		f2 << b[i] << " ";
+	}
+
+	/*cout << "begin" << endl << endl;
 	timespec_get(&ts1, TIME_UTC);
 	vector<double> X = Local2.CG4(b);
 	timespec_get(&ts2, TIME_UTC);
+	cout << endl << "end" << endl;
+
 	ofstream xx("X3.txt");
 	for (int i = 0; i < X.size(); i++)
 	{
 		xx << X[i] << endl;
 	}
 	xx << endl;
-
-	/*strftime(timestamp1, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts1.tv_sec));
-	strftime(timestamp2, 100, "%Y-%m-%d %H:%M:%S:", gmtime(&ts2.tv_sec));
-	t = ts2.tv_nsec - ts1.tv_nsec;
-	cout << timestamp1 << ts1.tv_nsec << endl;
-	cout << timestamp2 << ts2.tv_nsec << endl;
-	sec = (double(ts2.tv_sec) + double(ts2.tv_nsec) / 1000000000) - (double(ts1.tv_sec) + double(ts1.tv_nsec) / 1000000000);
-	cout << sec << endl;*/
-
 
 	vector<Strains> Epsilon(element_count);
 	vector<Stresses> Sigma(element_count);
@@ -406,12 +431,12 @@ int Task3()
 	}
 	ofstream f3("strains3.txt");
 	ofstream f4("stresses3.txt");
-	//cout << eps.size() << endl;
+	
 	for (int i = 0; i < Epsilon.size(); i++)
 	{
 		f3 << Epsilon[i];
 		f4 << Sigma[i];
-	}
+	}*/
 
 	ofstream f5("nodes3.txt");
 	for (int i = 0; i < list_elements_with_nodes.size(); i++)
@@ -423,6 +448,7 @@ int Task3()
 #endif
 	}
 	f5.close();
+	/*
 	ofstream f6("coord3.txt");
 	for (int i = 0; i < list_of_nodes_with_coords.size(); i++)
 	{
@@ -435,7 +461,7 @@ int Task3()
 	{
 		elements[i].PrintToFile(f7);
 	}
-	f7.close();
+	f7.close();*/
 
 	return 0;
 }

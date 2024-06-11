@@ -1,12 +1,5 @@
 #include "Header.h"
 #include "Matrix.h"
-//using vector_loc = vector<double>;
-//using matrix = vector < array<array<double, 6>, 6>>;
-
-#include <sycl/sycl.hpp>
-#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
-#include <sycl/ext/intel/fpga_extensions.hpp>
-#endif
 
 class DivisionToLocals2
 {
@@ -32,8 +25,8 @@ public:
 
 	//void Multiply(sycl::queue& q, const vector<vector_loc>& x, vector<vector_loc>& b);
 
-	vector<double> CG4(vector<double>& b);
+	//vector<double> CG4(vector<double>& b);
 
 	friend class Restraint;
-	friend void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b);
+	//friend void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b);
 };

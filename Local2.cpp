@@ -72,38 +72,7 @@ ostream& operator<<(ostream& cout, DivisionToLocals2& b)
 	return cout;
 }
 
-/*void DivisionToLocalsTri2::Multiply(sycl::queue& q, const vector<vector_loc>& x, vector<vector_loc>& b)
-{
-	sycl::range<1> SIZE{ x.size() };
-
-	sycl::buffer dM(matr);
-	sycl::buffer dx(x);
-	sycl::buffer db(b.data(), SIZE);
-
-	q.submit([&](sycl::handler& h) {
-
-		sycl::accessor pM(dM, h, sycl::read_only);
-		sycl::accessor px(dx, h, sycl::read_only);
-		sycl::accessor pb(db, h, sycl::write_only, sycl::no_init);
-
-		h.parallel_for(SIZE, [=](auto k)
-			{
-				for (int i = 0; i < 6; ++i)
-				{
-					double val = 0;
-					for (int j = 0; j < 6; ++j)
-					{
-						val += pM[k][i][j] * px[k][j];
-					}
-					pb[k][i] = val;
-				}
-			});
-		});
-
-	q.wait();
-}*/
-
-vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
+/*vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 {
 	struct timespec ts1, ts2;
 
@@ -126,10 +95,6 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 	double alpha, beta;
 
 	sycl::queue q(sycl::default_selector_v);
-
-	//sycl::buffer <vector<vector_loc>> dM(matr);
-
-	sycl::buffer dM(matr);
 
 	timespec_get(&ts1, TIME_UTC);
 	do
@@ -165,4 +130,4 @@ vector<double> DivisionToLocalsTri2::CG4(vector<double>& b)
 	cout << sec << endl;
 
 	return x;
-}
+}*/

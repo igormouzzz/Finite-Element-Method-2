@@ -90,18 +90,18 @@ int Task();
 int Task2();
 int Task3();
 int Example();
-int Test();
+//int Test();
+//int Test2();
 
-#include <sycl/sycl.hpp>
-#if FPGA_HARDWARE || FPGA_EMULATOR || FPGA_SIMULATOR
-#include <sycl/ext/intel/fpga_extensions.hpp>
-#endif
 using vector_loc = vector<double>;
 using matrix = vector < array<array<double, 6>, 6>>;
 
-void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b);
-void initialize_array(int n, vector<double>& a, vector<double>& b, vector<double>& c_result);
-void vector_add(sycl::queue& Q, int n, vector<double>& a, vector<double>& b, vector<double>& c);
+//void Multiply(sycl::queue& q, const matrix& matr, const vector<vector_loc>& x, vector<vector_loc>& b);
+//void initialize_array(int n, vector<double>& a, vector<double>& b, vector<double>& c_result);
+//void vector_add(sycl::queue& Q, int n, vector<double>& a, vector<double>& b, vector<double>& c);
+
+//void initialize_array2(int n, matrix& m, vector<vector_loc>& b, vector<vector_loc>& c_result);
+//void multiply2(sycl::queue& Q, int n, matrix& m, vector<vector_loc>& b, vector<vector_loc>& c);
 
 double norm_square(vector<double>& b);
 double norm_l1(vector<double>& b);

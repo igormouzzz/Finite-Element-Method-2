@@ -38,7 +38,6 @@ Matrix::Matrix(int N, int M)
 	{
 		this->a[i].resize(M);
 	}
-#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -58,7 +57,6 @@ Matrix::Matrix(vector<row> rows)
 	{
 		this->a[i].resize(M);
 	}
-#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -77,7 +75,6 @@ Matrix::Matrix(const Matrix& b)
 	{
 		this->a[i].resize(M);
 	}
-#pragma omp parallel for
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < M; j++)
@@ -718,7 +715,7 @@ vector<double> Matrix::CG3(vector<double>& b)
 	std::vector<double> p = r;      // Search direction vector
 
 	unsigned int iteration = 0;
-	unsigned int max_iter = 1000;
+	unsigned int max_iter = N;
 
 	do
 	{
